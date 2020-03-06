@@ -6,7 +6,33 @@
         xmlns:local="clr-namespace:JsonEditor"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
-    </Grid>
+    <DockPanel LastChildFill="False">
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+            <Button Background="AliceBlue" Content="Open" Margin="5" Padding="2"/>
+            <Button Background="AliceBlue" Content="Save"  Margin="5" Padding="2"/>
+            <Button Background="AliceBlue" Content="Save as"  Margin="5" Padding="2"/>
+        </StackPanel>
+        <TreeView Margin="0,-0.2,-0.4,0" VerticalAlignment="Top" DockPanel.Dock="Top" Height="389">
+            <TextBox>Элемент TreeView</TextBox>
+            <TreeViewItem Header="Базы данных">
+                <TreeViewItem Header="MS SQL Server" />
+                <TreeViewItem Header="MySQL" />
+                <TreeViewItem Header="MongoDB" />
+                <TreeViewItem Header="Postgres" />
+            </TreeViewItem>
+            <TreeViewItem Header="Языки программирования">
+                <TreeViewItem Header="C-языки">
+                    <TreeViewItem Header="C#" />
+                    <TreeViewItem Header="C/C++" />
+                    <TreeViewItem Header="Java" />
+                </TreeViewItem>
+                <TreeViewItem Header="Basic">
+                    <TreeViewItem Header="Visual Basic" />
+                    <TreeViewItem Header="VB.Net" />
+                    <TreeViewItem Header="PureBasic" />
+                </TreeViewItem>
+            </TreeViewItem>
+        </TreeView>
+
+    </DockPanel>
 </Window>
