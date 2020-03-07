@@ -8,9 +8,9 @@
         Title="MainWindow" Height="450" Width="800">
     <DockPanel LastChildFill="False">
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
-            <Button Background="AliceBlue" Content="Open" Margin="5" Padding="2"/>
+            <Button Background="AliceBlue" Content="Open" Margin="5" Padding="2" Click="Button_Click"/>
             <Button Background="AliceBlue" Content="Save"  Margin="5" Padding="2"/>
-            <Button Background="AliceBlue" Content="Save as"  Margin="5" Padding="2"/>
+            <Button Background="AliceBlue" Content="Save as"  Margin="5" Padding="2" Click="Button_Click_1"/>
         </StackPanel>
         <TreeView Margin="0,-0.2,-0.4,0" VerticalAlignment="Top" DockPanel.Dock="Top" Height="389">
             <TextBox>Элемент TreeView</TextBox>
@@ -21,9 +21,9 @@
                 <TreeViewItem Header="Postgres" />
             </TreeViewItem>
             <TreeViewItem Header="Языки программирования">
-                <TreeViewItem Header="C-языки">
-                    <TreeViewItem Header="C#" />
-                    <TreeViewItem Header="C/C++" />
+                <TreeViewItem Header="Station-языки">
+                    <TreeViewItem Header="Station#" />
+                    <TreeViewItem Header="Station/Station++" />
                     <TreeViewItem Header="Java" />
                 </TreeViewItem>
                 <TreeViewItem Header="Basic">
