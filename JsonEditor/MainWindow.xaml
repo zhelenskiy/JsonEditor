@@ -8,9 +8,9 @@
         Title="MainWindow" Height="450" Width="800">
     <DockPanel LastChildFill="False">
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
-            <Button Background="AliceBlue" Content="Open" Margin="5" Padding="2" Click="Button_Click"/>
-            <Button Background="AliceBlue" Content="Save"  Margin="5" Padding="2"/>
-            <Button Background="AliceBlue" Content="Save as"  Margin="5" Padding="2" Click="Button_Click_1"/>
+            <Button Background="AliceBlue" Content="Open" Margin="5" Padding="2" Click="OpenButtonClick"/>
+            <Button Background="AliceBlue" Content="Save"  Margin="5" Padding="2" Click="SaveButtonClick"/>
+            <Button Background="AliceBlue" Content="Save as"  Margin="5" Padding="2" Click="SaveAsButtonClick"/>
         </StackPanel>
         <TreeView Margin="0,-0.2,-0.4,0" VerticalAlignment="Top" DockPanel.Dock="Top" Height="389">
             <TextBox>Элемент TreeView</TextBox>

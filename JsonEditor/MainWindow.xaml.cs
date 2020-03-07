@@ -1,17 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 
 namespace JsonEditor
@@ -21,26 +11,30 @@ namespace JsonEditor
     /// </summary>
     public partial class MainWindow : Window
     {
-        private Station[] curStation = new Station[0];
-        private string curFileName = "";
+        private Station[] _curStation;
+        private string _curFileName = "";
 
         public MainWindow()
         {
             InitializeComponent();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void OpenButtonClick(object sender, RoutedEventArgs e)
         {
-            // Create OpenFileDialog 
-            var dlg = new Microsoft.Win32.OpenFileDialog();
+            var dlg = new OpenFileDialog();
             if (dlg.ShowDialog() != true) return;
+            ReadJson(dlg.FileName);
+        }
+
+        private void ReadJson(string path)
+        {
             try
             {
-                var data = System.IO.File.ReadAllText(dlg.FileName);
+                var data = File.ReadAllText(path);
                 try
                 {
-                    curStation = JsonConvert.DeserializeObject<Station[]>(data);
-                    curFileName = dlg.FileName;
+                    _curStation = JsonConvert.DeserializeObject<Station[]>(data);
+                    _curFileName = path;
                 }
                 catch (Exception exception)
                 {
@@ -53,9 +47,39 @@ namespace JsonEditor
             }
         }
 
-        private void Button_Click_1(object sender, RoutedEventArgs e)
+        private void SaveAsButtonClick(object sender, RoutedEventArgs e)
         {
+            if (!CheckDataToWrite()) return;
+            var dlg = new SaveFileDialog();
+            if (dlg.ShowDialog() != true) return;
+            WriteJson(dlg.FileName);
+        }
 
+        private bool CheckDataToWrite()
+        {
+            if (_curStation != null) return true;
+            MessageBox.Show("No opened files", "Can not write JSON.");
+            return false;
+        }
+
+        private void WriteJson(string path)
+        {
+            try
+            {
+                File.WriteAllText(path, JsonConvert.SerializeObject(_curStation));
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message, "Can not write to this file.");
+            }
+        }
+
+        private void SaveButtonClick(object sender, RoutedEventArgs e)
+        {
+            if (CheckDataToWrite())
+            {
+                WriteJson(_curFileName);
+            }
         }
     }
 
