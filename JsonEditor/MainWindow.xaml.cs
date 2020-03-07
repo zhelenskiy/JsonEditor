@@ -16,9 +16,9 @@ namespace JsonEditor
     public partial class MainWindow : Window
     {
         private const string JsonFilesFilter = "JSON files (*.json)|*.json|All files (*.*)|*.*";
-        private Station[] _curStation;
-        private string _curFileName = "";
+        private Station[] СurStation { get; set; }
 
+        private string _curFileName = "";
         private string CurFileName
         {
             get => _curFileName;
@@ -46,7 +46,7 @@ namespace JsonEditor
         private void BuildTree()
         {
             JsonTree.Items.Clear();
-            foreach (var station in _curStation)
+            foreach (var station in СurStation)
             {
                 BuildNode(JsonTree, station);
             }
@@ -74,7 +74,7 @@ namespace JsonEditor
                 var data = File.ReadAllText(path);
                 try
                 {
-                    _curStation = JsonConvert.DeserializeObject<Station[]>(data);
+                    СurStation = JsonConvert.DeserializeObject<Station[]>(data);
                     CurFileName = path;
                 }
                 catch (Exception exception)
@@ -94,11 +94,12 @@ namespace JsonEditor
             var dlg = new SaveFileDialog {Filter = JsonFilesFilter};
             if (dlg.ShowDialog() != true) return; //can be null
             WriteJson(dlg.FileName);
+            CurFileName = dlg.FileName;
         }
 
         private bool CheckDataToWrite()
         {
-            if (_curStation != null) return true;
+            if (СurStation != null) return true;
             MessageBox.Show("No opened files", "Can not write JSON.");
             return false;
         }
@@ -107,7 +108,7 @@ namespace JsonEditor
         {
             try
             {
-                File.WriteAllText(path, JsonConvert.SerializeObject(_curStation));
+                File.WriteAllText(path, JsonConvert.SerializeObject(СurStation));
             }
             catch (Exception exception)
             {
