@@ -40,8 +40,8 @@ namespace JsonEditor
         {
             var dlg = new OpenFileDialog {Filter = JsonFilesFilter};
             if (dlg.ShowDialog() != true) return;
-                var oldStations = СurStations;
-                var oldFileName = CurFileName;
+            var oldStations = СurStations;
+            var oldFileName = CurFileName;
             try
             {
                 ReadJson(dlg.FileName);
@@ -72,13 +72,10 @@ namespace JsonEditor
             }
         }
 
-        private static void BuildNode<T>(ItemsControl cur, T item)
+        private static void BuildNode(ItemsControl cur, INamed item)
         {
-            var v = new TreeViewItem
-            {
-                Header = GetProperty(item, "name")
-            };
-            foreach (var property in (IEnumerable) GetProperty(item, "items") ?? new ArrayList())
+            var v = new JsonTreeViewItem {Header = GetProperty(item, "name"), JsonObject = item};
+            foreach (INamed property in (IEnumerable) GetProperty(item, "items") ?? new ArrayList())
             {
                 BuildNode(v, property);
             }
@@ -155,7 +152,15 @@ namespace JsonEditor
         [SuppressMessage("ReSharper", "InconsistentNaming")]
         [SuppressMessage("ReSharper", "UnusedMember.Global")]
         [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
-        internal class Station
+        internal interface INamed
+        {
+            string name { get; set; }
+        }
+
+        [SuppressMessage("ReSharper", "InconsistentNaming")]
+        [SuppressMessage("ReSharper", "UnusedMember.Global")]
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
+        internal class Station : INamed
         {
             public string type { get; set; }
             public string id { get; set; }
@@ -167,7 +172,7 @@ namespace JsonEditor
         [SuppressMessage("ReSharper", "InconsistentNaming")]
         [SuppressMessage("ReSharper", "UnusedMember.Global")]
         [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
-        internal class Arm
+        internal class Arm : INamed
         {
             public string type { get; set; }
             public string id { get; set; }
@@ -179,7 +184,7 @@ namespace JsonEditor
         [SuppressMessage("ReSharper", "InconsistentNaming")]
         [SuppressMessage("ReSharper", "UnusedMember.Global")]
         [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
-        internal class Device
+        internal class Device : INamed
         {
             public string type { get; set; }
             public string id { get; set; }
@@ -187,11 +192,12 @@ namespace JsonEditor
         }
     }
 
-    //class MyClass
-    //{
-    //}
+    internal class JsonTreeViewItem : TreeViewItem
+    {
+        public INamed JsonObject { get; set; }
+    }
 
-    class JsonEditorException : Exception
+    internal class JsonEditorException : Exception
     {
         public JsonEditorException()
         {
