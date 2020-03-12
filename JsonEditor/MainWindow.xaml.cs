@@ -71,8 +71,10 @@ namespace JsonEditor
 
         private static void BuildNode(ItemsControl cur, INamed item)
         {
-            var v = new JsonTreeViewItem {Header = GetProperty(item, "name"), JsonObject = item};
-            v.ContextMenu = new ContextMenu();
+            var v = new JsonTreeViewItem
+            {
+                Header = GetProperty(item, "name"), JsonObject = item, ContextMenu = new ContextMenu()
+            };
             var rename = new JsonTreeViewMenuItem {Header = "Rename", Source = v};
             rename.Click += Rename_Click;
             v.ContextMenu.Items.Add(rename);
@@ -87,7 +89,6 @@ namespace JsonEditor
         private static void Rename_Click(object sender, RoutedEventArgs e)
         {
             var jsonTreeViewMenuItem = (sender as JsonTreeViewMenuItem);
-            MessageBox.Show(jsonTreeViewMenuItem?.Source.JsonObject.name);
             var wind = new RenameWindow(jsonTreeViewMenuItem?.Source.JsonObject.name);
             if (wind.ShowDialog() != true) return;
             Debug.Assert(jsonTreeViewMenuItem != null, nameof(jsonTreeViewMenuItem) + " != null");
