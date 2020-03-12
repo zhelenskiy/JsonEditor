@@ -17,7 +17,32 @@ namespace JsonEditor
     public partial class MainWindow : Window
     {
         private const string JsonFilesFilter = "JSON files (*.json)|*.json|All files (*.*)|*.*";
-        private Station[] СurStations { get; set; }
+        private Station[] _curStations;
+
+        private Station[] СurStations
+        {
+            get => _curStations;
+            set
+            {
+                var oldStations = _curStations;
+                var oldTree = JsonTree;
+                _curStations = value;
+                try
+                {
+                    JsonTree.Items.Clear();
+                    foreach (var station in СurStations)
+                    {
+                        BuildNode(JsonTree, station);
+                    }
+                }
+                catch (Exception e)
+                {
+                    JsonTree = oldTree;
+                    _curStations = oldStations;
+                    throw new JsonEditorException("Invalid JSON file.", e);
+                }
+            }
+        }
 
         private string _curFileName = "";
 
@@ -40,36 +65,7 @@ namespace JsonEditor
         {
             var dlg = new OpenFileDialog {Filter = JsonFilesFilter};
             if (dlg.ShowDialog() != true) return;
-            var oldStations = СurStations;
-            var oldFileName = CurFileName;
-            try
-            {
-                ReadJson(dlg.FileName);
-                BuildTree();
-            }
-            catch (JsonEditorException exception)
-            {
-                MessageBox.Show(exception.Message, "Can not read the file!");
-                CurFileName = oldFileName;
-                СurStations = oldStations;
-            }
-        }
-
-
-        private void BuildTree()
-        {
-            try
-            {
-                JsonTree.Items.Clear();
-                foreach (var station in СurStations)
-                {
-                    BuildNode(JsonTree, station);
-                }
-            }
-            catch (Exception e)
-            {
-                throw new JsonEditorException("Invalid JSON file.", e);
-            }
+            HandleException(() => ReadJson(dlg.FileName), "open the file");
         }
 
         private static void BuildNode(ItemsControl cur, INamed item)
@@ -86,39 +82,42 @@ namespace JsonEditor
 
         private void ReadJson(string path)
         {
+            string data;
             try
             {
-                var data = File.ReadAllText(path);
-                try
-                {
-                    СurStations = JsonConvert.DeserializeObject<Station[]>(data);
-                    CurFileName = path;
-                }
-                catch (Exception exception)
-                {
-                    throw new JsonEditorException("The file is not JSON.", exception);
-                }
+                data = File.ReadAllText(path);
             }
             catch (Exception exception)
             {
                 throw new JsonEditorException("Can not read this file.", exception);
             }
+
+            try
+            {
+                СurStations = JsonConvert.DeserializeObject<Station[]>(data);
+                CurFileName = path;
+            }
+            catch (Exception exception)
+            {
+                throw new JsonEditorException("Invalid JSON file.", exception);
+            }
         }
 
         private void SaveAsButtonClick(object sender, RoutedEventArgs e)
         {
-            if (!CheckDataToWrite()) return;
-            var dlg = new SaveFileDialog {Filter = JsonFilesFilter};
-            if (dlg.ShowDialog() != true) return; //can be null
-            WriteJson(dlg.FileName);
-            CurFileName = dlg.FileName;
+            HandleException(() =>
+            {
+                CheckDataToWrite();
+                var dlg = new SaveFileDialog {Filter = JsonFilesFilter};
+                if (dlg.ShowDialog() != true) return; //can be null
+                WriteJson(dlg.FileName);
+            }, "save as the new file");
         }
 
-        private bool CheckDataToWrite()
+        private void CheckDataToWrite()
         {
-            if (СurStations != null) return true;
-            MessageBox.Show("No opened files", "Can not write JSON.");
-            return false;
+            if (СurStations == null)
+                throw new JsonEditorException("No opened files");
         }
 
         private void WriteJson(string path)
@@ -126,19 +125,33 @@ namespace JsonEditor
             try
             {
                 File.WriteAllText(path, JsonConvert.SerializeObject(СurStations));
+                CurFileName = path;
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, "Can not write to this file.");
+                throw new JsonEditorException("Can not write to this file.", exception);
+            }
+        }
+
+        private static void HandleException(Action action, string actionName)
+        {
+            try
+            {
+                action.Invoke();
+            }
+            catch (JsonEditorException e)
+            {
+                MessageBox.Show(e.Message, $"Can not {actionName}!");
             }
         }
 
         private void SaveButtonClick(object sender, RoutedEventArgs e)
         {
-            if (CheckDataToWrite())
+            HandleException(() =>
             {
+                CheckDataToWrite();
                 WriteJson(CurFileName);
-            }
+            }, "save the file");
         }
 
         private static object GetProperty(object obj, string propertyName)
