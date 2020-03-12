@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Runtime.Serialization;
 using System.Windows;
 using System.Windows.Controls;
 using JsonEditor.DataClasses;
@@ -16,9 +17,10 @@ namespace JsonEditor
     public partial class MainWindow : Window
     {
         private const string JsonFilesFilter = "JSON files (*.json)|*.json|All files (*.*)|*.*";
-        private Station[] СurStation { get; set; }
+        private Station[] СurStations { get; set; }
 
         private string _curFileName = "";
+
         private string CurFileName
         {
             get => _curFileName;
@@ -38,17 +40,35 @@ namespace JsonEditor
         {
             var dlg = new OpenFileDialog {Filter = JsonFilesFilter};
             if (dlg.ShowDialog() != true) return;
-            ReadJson(dlg.FileName);
-            BuildTree();
+                var oldStations = СurStations;
+                var oldFileName = CurFileName;
+            try
+            {
+                ReadJson(dlg.FileName);
+                BuildTree();
+            }
+            catch (JsonEditorException exception)
+            {
+                MessageBox.Show(exception.Message, "Can not read the file!");
+                CurFileName = oldFileName;
+                СurStations = oldStations;
+            }
         }
 
 
         private void BuildTree()
         {
-            JsonTree.Items.Clear();
-            foreach (var station in СurStation)
+            try
             {
-                BuildNode(JsonTree, station);
+                JsonTree.Items.Clear();
+                foreach (var station in СurStations)
+                {
+                    BuildNode(JsonTree, station);
+                }
+            }
+            catch (Exception e)
+            {
+                throw new JsonEditorException("Invalid JSON file.", e);
             }
         }
 
@@ -74,17 +94,17 @@ namespace JsonEditor
                 var data = File.ReadAllText(path);
                 try
                 {
-                    СurStation = JsonConvert.DeserializeObject<Station[]>(data);
+                    СurStations = JsonConvert.DeserializeObject<Station[]>(data);
                     CurFileName = path;
                 }
                 catch (Exception exception)
                 {
-                    MessageBox.Show(exception.Message, "Invalid JSON file.");
+                    throw new JsonEditorException("The file is not JSON.", exception);
                 }
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, "Can not read this file.");
+                throw new JsonEditorException("Can not read this file.", exception);
             }
         }
 
@@ -99,7 +119,7 @@ namespace JsonEditor
 
         private bool CheckDataToWrite()
         {
-            if (СurStation != null) return true;
+            if (СurStations != null) return true;
             MessageBox.Show("No opened files", "Can not write JSON.");
             return false;
         }
@@ -108,7 +128,7 @@ namespace JsonEditor
         {
             try
             {
-                File.WriteAllText(path, JsonConvert.SerializeObject(СurStation));
+                File.WriteAllText(path, JsonConvert.SerializeObject(СurStations));
             }
             catch (Exception exception)
             {
@@ -164,6 +184,29 @@ namespace JsonEditor
             public string type { get; set; }
             public string id { get; set; }
             public string name { get; set; }
+        }
+    }
+
+    //class MyClass
+    //{
+    //}
+
+    class JsonEditorException : Exception
+    {
+        public JsonEditorException()
+        {
+        }
+
+        public JsonEditorException(string message) : base(message)
+        {
+        }
+
+        public JsonEditorException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
+        protected JsonEditorException(SerializationInfo info, StreamingContext context) : base(info, context)
+        {
         }
     }
 }
