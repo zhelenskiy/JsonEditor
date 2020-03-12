@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.Serialization;
@@ -12,7 +13,7 @@ using Newtonsoft.Json;
 namespace JsonEditor
 {
     /// <summary>
-    /// Логика взаимодействия для MainWindow.xaml
+    /// Logic of MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
@@ -71,6 +72,10 @@ namespace JsonEditor
         private static void BuildNode(ItemsControl cur, INamed item)
         {
             var v = new JsonTreeViewItem {Header = GetProperty(item, "name"), JsonObject = item};
+            v.ContextMenu = new ContextMenu();
+            var rename = new JsonTreeViewMenuItem {Header = "Rename", Source = v};
+            rename.Click += Rename_Click;
+            v.ContextMenu.Items.Add(rename);
             foreach (INamed property in (IEnumerable) GetProperty(item, "items") ?? new ArrayList())
             {
                 BuildNode(v, property);
@@ -79,6 +84,16 @@ namespace JsonEditor
             cur.Items.Add(v);
         }
 
+        private static void Rename_Click(object sender, RoutedEventArgs e)
+        {
+            var jsonTreeViewMenuItem = (sender as JsonTreeViewMenuItem);
+            MessageBox.Show(jsonTreeViewMenuItem?.Source.JsonObject.name);
+            var wind = new RenameWindow(jsonTreeViewMenuItem?.Source.JsonObject.name);
+            if (wind.ShowDialog() != true) return;
+            Debug.Assert(jsonTreeViewMenuItem != null, nameof(jsonTreeViewMenuItem) + " != null");
+            jsonTreeViewMenuItem.Source.JsonObject.name = wind.ResultName;
+            jsonTreeViewMenuItem.Source.Header = wind.ResultName;
+        }
 
         private void ReadJson(string path)
         {
@@ -208,6 +223,11 @@ namespace JsonEditor
     internal class JsonTreeViewItem : TreeViewItem
     {
         public INamed JsonObject { get; set; }
+    }
+
+    internal class JsonTreeViewMenuItem : MenuItem
+    {
+        public JsonTreeViewItem Source { get; set; }
     }
 
     internal class JsonEditorException : Exception
