@@ -3,7 +3,6 @@ using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Runtime.Serialization;
 using System.Windows;
 using System.Windows.Controls;
 using JsonEditor.DataClasses;
@@ -157,7 +156,7 @@ namespace JsonEditor
             }
             catch (JsonEditorException e)
             {
-                MessageBox.Show(e.Message, $"Can not {actionName}!");
+                MessageBox.Show($"{e.Message}\n{e.InnerException.Message}", $"Can not {actionName}!");
             }
         }
 
@@ -229,24 +228,5 @@ namespace JsonEditor
     internal class JsonTreeViewMenuItem : MenuItem
     {
         public JsonTreeViewItem Source { get; set; }
-    }
-
-    internal class JsonEditorException : Exception
-    {
-        public JsonEditorException()
-        {
-        }
-
-        public JsonEditorException(string message) : base(message)
-        {
-        }
-
-        public JsonEditorException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
-
-        protected JsonEditorException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
     }
 }

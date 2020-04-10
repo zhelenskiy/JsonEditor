@@ -73,6 +73,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="JsonEditorException.cs" />
     <Compile Include="RenameWindow.xaml.cs">
       <DependentUpon>RenameWindow.xaml</DependentUpon>
     </Compile>
