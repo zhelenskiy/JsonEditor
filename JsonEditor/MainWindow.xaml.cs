@@ -1,10 +1,12 @@
 ﻿using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using JsonEditor.DataClasses;
 using Microsoft.Win32;
 using Newtonsoft.Json;
@@ -17,9 +19,9 @@ namespace JsonEditor
     public partial class MainWindow : Window
     {
         private const string JsonFilesFilter = "JSON files (*.json)|*.json|All files (*.*)|*.*";
-        private Station[] _curStations;
+        private List<Station> _curStations;
 
-        private Station[] СurStations
+        private List<Station> СurStations
         {
             get => _curStations;
             set
@@ -61,14 +63,14 @@ namespace JsonEditor
             InitializeComponent();
         }
 
-        private void OpenButtonClick(object sender, RoutedEventArgs e)
+        private void OpenButton_Click(object sender, RoutedEventArgs e)
         {
             var dlg = new OpenFileDialog {Filter = JsonFilesFilter};
             if (dlg.ShowDialog() != true) return;
             HandleException(() => ReadJson(dlg.FileName), "open the file");
         }
 
-        private static void BuildNode(ItemsControl parent, INamed item)
+        private void BuildNode(ItemsControl parent, INamed item)
         {
             var v = new JsonTreeViewItem
             {
@@ -77,12 +79,42 @@ namespace JsonEditor
             var rename = new JsonTreeViewMenuItem {Header = "Rename", Source = v};
             rename.Click += Rename_Click;
             v.ContextMenu.Items.Add(rename);
-            foreach (INamed property in (IEnumerable) GetProperty(item, "items") ?? new ArrayList())
+            var remove = new JsonTreeViewMenuItem {Header = "Remove", Source = v};
+            remove.Click += Remove_Click;
+            v.ContextMenu.Items.Add(remove);
+            ;
+            foreach (INamed property in item.NamedItems)
             {
                 BuildNode(v, property);
             }
 
             parent.Items.Add(v);
+        }
+
+        private void Remove_Click(object sender, RoutedEventArgs e)
+        {
+            JsonTreeViewItem item = (sender as JsonTreeViewMenuItem)?.Source;
+            if (item == null) return;
+            if (GetSelectedTreeViewItemParent(item) is JsonTreeViewItem parent)
+            {
+                parent.Items.Remove(item);
+                parent.JsonObject.Remove(item.JsonObject);
+            }
+            else
+            {
+                JsonTree.Items.Remove(item);
+                _curStations.Remove(item.JsonObject as Station);
+            }
+        }
+
+        private static ItemsControl GetSelectedTreeViewItemParent(DependencyObject item)
+        {
+            var parent = VisualTreeHelper.GetParent(item);
+            while (!(parent is TreeViewItem || parent is TreeView || parent == null))
+            {
+                parent = VisualTreeHelper.GetParent(parent);
+            }
+            return parent as ItemsControl;
         }
 
         private static void Rename_Click(object sender, RoutedEventArgs e)
@@ -109,16 +141,17 @@ namespace JsonEditor
 
             try
             {
-                СurStations = JsonConvert.DeserializeObject<Station[]>(data);
+                СurStations = JsonConvert.DeserializeObject<List<Station>>(data);
             }
             catch (Exception exception)
             {
                 throw new JsonEditorException("Invalid JSON file.", exception);
             }
+
             CurFileName = path;
         }
 
-        private void SaveAsButtonClick(object sender, RoutedEventArgs e)
+        private void SaveAsButton_Click(object sender, RoutedEventArgs e)
         {
             HandleException(() =>
             {
@@ -145,6 +178,7 @@ namespace JsonEditor
             {
                 throw new JsonEditorException("Can not write to this file.", exception);
             }
+
             CurFileName = path;
         }
 
@@ -160,18 +194,13 @@ namespace JsonEditor
             }
         }
 
-        private void SaveButtonClick(object sender, RoutedEventArgs e)
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             HandleException(() =>
             {
                 CheckDataToWrite();
                 WriteJson(CurFileName);
             }, "save the file");
-        }
-
-        private static object GetProperty(object obj, string propertyName)
-        {
-            return obj.GetType().GetProperty(propertyName)?.GetValue(obj);
         }
     }
 
@@ -183,6 +212,9 @@ namespace JsonEditor
         internal interface INamed
         {
             string name { get; set; }
+            void Remove(INamed subItem);
+
+            IEnumerable<INamed> NamedItems { get; }
         }
 
         [SuppressMessage("ReSharper", "InconsistentNaming")]
@@ -193,7 +225,16 @@ namespace JsonEditor
             public string type { get; set; }
             public string id { get; set; }
             public string name { get; set; }
-            public Arm[] items { get; set; }
+
+            public void Remove(INamed subItem)
+            {
+                if (subItem is Arm arm)
+                    items.Remove(arm);
+            }
+
+            public IEnumerable<INamed> NamedItems => items;
+
+            public List<Arm> items { get; set; }
         }
 
 
@@ -205,7 +246,16 @@ namespace JsonEditor
             public string type { get; set; }
             public string id { get; set; }
             public string name { get; set; }
-            public Device[] items { get; set; }
+
+            public void Remove(INamed subItem)
+            {
+                if (subItem is Device device)
+                    items.Remove(device);
+            }
+
+            public IEnumerable<INamed> NamedItems => items;
+
+            public List<Device> items { get; set; }
         }
 
 
@@ -217,6 +267,12 @@ namespace JsonEditor
             public string type { get; set; }
             public string id { get; set; }
             public string name { get; set; }
+
+            public void Remove(INamed missing_name)
+            {
+            }
+
+            public IEnumerable<INamed> NamedItems => Enumerable.Empty<INamed>();
         }
     }
 

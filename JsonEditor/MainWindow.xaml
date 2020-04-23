@@ -8,9 +8,9 @@
         Title="JSON editor" Height="450" Width="800">
     <DockPanel x:Name="Dock" LastChildFill="False">
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
-            <Button Background="AliceBlue" Content="Open" Margin="5" Padding="2" Click="OpenButtonClick" />
-            <Button Background="AliceBlue" Content="Save" Margin="5" Padding="2" Click="SaveButtonClick" />
-            <Button Background="AliceBlue" Content="Save as" Margin="5" Padding="2" Click="SaveAsButtonClick" />
+            <Button Background="AliceBlue" Content="Open" Margin="5" Padding="2" Click="OpenButton_Click" />
+            <Button Background="AliceBlue" Content="Save" Margin="5" Padding="2" Click="SaveButton_Click" />
+            <Button Background="AliceBlue" Content="Save as" Margin="5" Padding="2" Click="SaveAsButton_Click" />
         </StackPanel>
         <TreeView x:Name="JsonTree" Margin="0,-0.2,-0.4,0" VerticalAlignment="Top" DockPanel.Dock="Top"
                   Height="{Binding ActualHeight, ElementName=Dock}" />
