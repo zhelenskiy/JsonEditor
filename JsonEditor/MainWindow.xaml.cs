@@ -220,6 +220,7 @@ namespace JsonEditor
         [SuppressMessage("ReSharper", "InconsistentNaming")]
         [SuppressMessage("ReSharper", "UnusedMember.Global")]
         [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
+        // ReSharper disable once ClassNeverInstantiated.Global
         internal class Station : INamed
         {
             public string type { get; set; }
@@ -241,6 +242,7 @@ namespace JsonEditor
         [SuppressMessage("ReSharper", "InconsistentNaming")]
         [SuppressMessage("ReSharper", "UnusedMember.Global")]
         [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
+        // ReSharper disable once ClassNeverInstantiated.Global
         internal class Arm : INamed
         {
             public string type { get; set; }
@@ -262,6 +264,7 @@ namespace JsonEditor
         [SuppressMessage("ReSharper", "InconsistentNaming")]
         [SuppressMessage("ReSharper", "UnusedMember.Global")]
         [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
+        // ReSharper disable once ClassNeverInstantiated.Global
         internal class Device : INamed
         {
             public string type { get; set; }
