@@ -68,11 +68,11 @@ namespace JsonEditor
             HandleException(() => ReadJson(dlg.FileName), "open the file");
         }
 
-        private static void BuildNode(ItemsControl cur, INamed item)
+        private static void BuildNode(ItemsControl parent, INamed item)
         {
             var v = new JsonTreeViewItem
             {
-                Header = GetProperty(item, "name"), JsonObject = item, ContextMenu = new ContextMenu()
+                Header = item.name, JsonObject = item, ContextMenu = new ContextMenu()
             };
             var rename = new JsonTreeViewMenuItem {Header = "Rename", Source = v};
             rename.Click += Rename_Click;
@@ -82,17 +82,17 @@ namespace JsonEditor
                 BuildNode(v, property);
             }
 
-            cur.Items.Add(v);
+            parent.Items.Add(v);
         }
 
         private static void Rename_Click(object sender, RoutedEventArgs e)
         {
-            var jsonTreeViewMenuItem = (sender as JsonTreeViewMenuItem);
-            var wind = new RenameWindow(jsonTreeViewMenuItem?.Source.JsonObject.name);
-            if (wind.ShowDialog() != true) return;
+            var jsonTreeViewMenuItem = sender as JsonTreeViewMenuItem;
+            var renameWindow = new RenameWindow(jsonTreeViewMenuItem?.Source.JsonObject.name);
+            if (renameWindow.ShowDialog() != true) return;
             Debug.Assert(jsonTreeViewMenuItem != null, nameof(jsonTreeViewMenuItem) + " != null");
-            jsonTreeViewMenuItem.Source.JsonObject.name = wind.ResultName;
-            jsonTreeViewMenuItem.Source.Header = wind.ResultName;
+            jsonTreeViewMenuItem.Source.JsonObject.name = renameWindow.ResultName;
+            jsonTreeViewMenuItem.Source.Header = renameWindow.ResultName;
         }
 
         private void ReadJson(string path)
@@ -110,12 +110,12 @@ namespace JsonEditor
             try
             {
                 СurStations = JsonConvert.DeserializeObject<Station[]>(data);
-                CurFileName = path;
             }
             catch (Exception exception)
             {
                 throw new JsonEditorException("Invalid JSON file.", exception);
             }
+            CurFileName = path;
         }
 
         private void SaveAsButtonClick(object sender, RoutedEventArgs e)
@@ -140,12 +140,12 @@ namespace JsonEditor
             try
             {
                 File.WriteAllText(path, JsonConvert.SerializeObject(СurStations));
-                CurFileName = path;
             }
             catch (Exception exception)
             {
                 throw new JsonEditorException("Can not write to this file.", exception);
             }
+            CurFileName = path;
         }
 
         private static void HandleException(Action action, string actionName)
@@ -156,7 +156,7 @@ namespace JsonEditor
             }
             catch (JsonEditorException e)
             {
-                MessageBox.Show($"{e.Message}\n{e.InnerException.Message}", $"Can not {actionName}!");
+                MessageBox.Show($"{e.Message}\n{e.InnerException?.Message ?? ""}", $"Can not {actionName}!");
             }
         }
 
