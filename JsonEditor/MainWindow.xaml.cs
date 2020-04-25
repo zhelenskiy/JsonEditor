@@ -58,10 +58,7 @@ namespace JsonEditor
             }
         }
 
-        public MainWindow()
-        {
-            InitializeComponent();
-        }
+        public MainWindow() => InitializeComponent();
 
         private void OpenButton_Click(object sender, RoutedEventArgs e)
         {
@@ -72,17 +69,13 @@ namespace JsonEditor
 
         private void BuildNode(ItemsControl parent, INamed item)
         {
-            var v = new JsonTreeViewItem
-            {
-                Header = item.name, JsonObject = item, ContextMenu = new ContextMenu()
-            };
+            var v = new JsonTreeViewItem {Header = item.name, JsonObject = item, ContextMenu = new ContextMenu()};
             var rename = new JsonTreeViewMenuItem {Header = "Rename", Source = v};
             rename.Click += Rename_Click;
             v.ContextMenu.Items.Add(rename);
             var remove = new JsonTreeViewMenuItem {Header = "Remove", Source = v};
             remove.Click += Remove_Click;
             v.ContextMenu.Items.Add(remove);
-            ;
             foreach (INamed property in item.NamedItems)
             {
                 BuildNode(v, property);
@@ -178,7 +171,6 @@ namespace JsonEditor
             {
                 throw new JsonEditorException("Can not write to this file.", exception);
             }
-
             CurFileName = path;
         }
 
