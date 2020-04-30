@@ -15,15 +15,15 @@ using System.Windows.Shapes;
 namespace JsonEditor
 {
     /// <summary>
-    /// Interaction logic for RenameWindow.xaml
+    /// Interaction logic for RenamingWindow.xaml
     /// </summary>
-    public partial class RenameWindow : Window
+    public partial class RenamingWindow : Window
     {
-        public RenameWindow()
+        public RenamingWindow()
         {
             InitializeComponent();
         }
-        public RenameWindow(string initialString) : this()
+        public RenamingWindow(string initialString) : this()
         {
             ResultName = initialString;
         }

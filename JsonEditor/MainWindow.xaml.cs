@@ -6,6 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Markup;
 using System.Windows.Media;
 using JsonEditor.DataClasses;
 using Microsoft.Win32;
@@ -21,7 +23,7 @@ namespace JsonEditor
         private const string JsonFilesFilter = "JSON files (*.json)|*.json|All files (*.*)|*.*";
         private List<Station> _curStations;
 
-        private List<Station> СurStations
+        internal List<Station> СurStations
         {
             get => _curStations;
             set
@@ -58,6 +60,8 @@ namespace JsonEditor
             }
         }
 
+        private JsonTreeViewItem Copied { get; set; }
+
         public MainWindow() => InitializeComponent();
 
         private void OpenButton_Click(object sender, RoutedEventArgs e)
@@ -67,21 +71,67 @@ namespace JsonEditor
             HandleException(() => ReadJson(dlg.FileName), "open the file");
         }
 
-        private void BuildNode(ItemsControl parent, INamed item)
+        internal void BuildNode(ItemsControl parent, INamed item)
+        {
+            var v = JsonTreeViewItemByINamed(item);
+            foreach (var property in item.NamedSubItems())
+            {
+                BuildNode(v, property);
+            }
+
+            parent.Items.Add(v);
+        }
+
+        internal JsonTreeViewItem JsonTreeViewItemByINamed(INamed item)
         {
             var v = new JsonTreeViewItem {Header = item.name, JsonObject = item, ContextMenu = new ContextMenu()};
+            var create = new JsonTreeViewMenuItem() {Header = "Create", Source = v};
+            create.Click += Create_Click;
+            v.ContextMenu.Items.Add(create);
             var rename = new JsonTreeViewMenuItem {Header = "Rename", Source = v};
             rename.Click += Rename_Click;
             v.ContextMenu.Items.Add(rename);
             var remove = new JsonTreeViewMenuItem {Header = "Remove", Source = v};
             remove.Click += Remove_Click;
             v.ContextMenu.Items.Add(remove);
-            foreach (INamed property in item.NamedItems)
-            {
-                BuildNode(v, property);
-            }
+            var copy = new JsonTreeViewMenuItem() {Header = "Copy", Source = v};
+            copy.Click += Copy_Click;
+            v.ContextMenu.Items.Add(copy);
+            var paste = new JsonTreeViewMenuItem() {Header = "Paste", Source = v};
+            paste.Click += Paste_Click;
+            v.ContextMenu.Items.Add(paste);
+            return v;
+        }
 
-            parent.Items.Add(v);
+        private void Create_Click(object sender, RoutedEventArgs e)
+        {
+            var jsonTreeViewMenuItem = sender as JsonTreeViewMenuItem;
+            var createWindow = new CreationWindow(jsonTreeViewMenuItem?.Source, this);
+            if (createWindow.ShowDialog() != true) return;
+            createWindow.CreateItem();
+        }
+
+        private void Paste_Click(object sender, RoutedEventArgs e)
+        {
+            HandleException(() =>
+            {
+                var selected = sender as JsonTreeViewMenuItem;
+                AssertTypeEquality(Copied.JsonObject, selected?.Source.JsonObject);
+            }, "paste the element due to the type discrepancy");
+        }
+
+        private void AssertTypeEquality(object copiedJsonObject, object sourceJsonObject)
+        {
+            if (copiedJsonObject.GetType() != sourceJsonObject.GetType())
+            {
+                throw new JsonEditorException(
+                    "Couldn't match the type of the first object against the type of the second object.");
+            }
+        }
+
+        private void Copy_Click(object sender, RoutedEventArgs e)
+        {
+            Copied = (sender as JsonTreeViewMenuItem)?.Source;
         }
 
         private void Remove_Click(object sender, RoutedEventArgs e)
@@ -91,7 +141,7 @@ namespace JsonEditor
             if (GetSelectedTreeViewItemParent(item) is JsonTreeViewItem parent)
             {
                 parent.Items.Remove(item);
-                parent.JsonObject.Remove(item.JsonObject);
+                parent.JsonObject.RemoveSubItem(item.JsonObject);
             }
             else
             {
@@ -100,20 +150,21 @@ namespace JsonEditor
             }
         }
 
-        private static ItemsControl GetSelectedTreeViewItemParent(DependencyObject item)
+        internal static ItemsControl GetSelectedTreeViewItemParent(DependencyObject item)
         {
             var parent = VisualTreeHelper.GetParent(item);
             while (!(parent is TreeViewItem || parent is TreeView || parent == null))
             {
                 parent = VisualTreeHelper.GetParent(parent);
             }
+
             return parent as ItemsControl;
         }
 
         private static void Rename_Click(object sender, RoutedEventArgs e)
         {
             var jsonTreeViewMenuItem = sender as JsonTreeViewMenuItem;
-            var renameWindow = new RenameWindow(jsonTreeViewMenuItem?.Source.JsonObject.name);
+            var renameWindow = new RenamingWindow(jsonTreeViewMenuItem?.Source.JsonObject.name);
             if (renameWindow.ShowDialog() != true) return;
             Debug.Assert(jsonTreeViewMenuItem != null, nameof(jsonTreeViewMenuItem) + " != null");
             jsonTreeViewMenuItem.Source.JsonObject.name = renameWindow.ResultName;
@@ -129,7 +180,7 @@ namespace JsonEditor
             }
             catch (Exception exception)
             {
-                throw new JsonEditorException("Can not read this file.", exception);
+                throw new JsonEditorException("Cannot read this file.", exception);
             }
 
             try
@@ -169,8 +220,9 @@ namespace JsonEditor
             }
             catch (Exception exception)
             {
-                throw new JsonEditorException("Can not write to this file.", exception);
+                throw new JsonEditorException("Cannot write to this file.", exception);
             }
+
             CurFileName = path;
         }
 
@@ -182,7 +234,7 @@ namespace JsonEditor
             }
             catch (JsonEditorException e)
             {
-                MessageBox.Show($"{e.Message}\n{e.InnerException?.Message ?? ""}", $"Can not {actionName}!");
+                MessageBox.Show($"{e.Message}\n{e.InnerException?.Message ?? ""}", $"Cannot {actionName}!");
             }
         }
 
@@ -194,6 +246,29 @@ namespace JsonEditor
                 WriteJson(CurFileName);
             }, "save the file");
         }
+
+        private void JsonTree_OnMouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (СurStations != null && !СurStations.Any())
+            {
+                var menuItem = new MenuItem {Header = "Add the first Station"};
+                var contextMenu = new ContextMenu();
+                menuItem.Click += MenuItem_Click;
+                contextMenu.Items.Add(menuItem);
+                JsonTree.ContextMenu = contextMenu;
+            }
+            else
+            {
+                JsonTree.ContextMenu = null;
+            }
+        }
+
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var createWindow = new CreationWindow(null, this);
+            if (createWindow.ShowDialog() != true) return;
+            createWindow.CreateItem();
+        }
     }
 
     namespace DataClasses
@@ -204,9 +279,18 @@ namespace JsonEditor
         internal interface INamed
         {
             string name { get; set; }
-            void Remove(INamed subItem);
 
-            IEnumerable<INamed> NamedItems { get; }
+            INamed create(string _type, string _id, string _name);
+
+            INamed createChild(string _type, string _id, string _name);
+
+            void RemoveSubItem(INamed missing_subItem);
+
+            void AddSubItem(INamed subItem);
+
+            void AddSubItem(INamed subItem, int index);
+
+            IEnumerable<INamed> NamedSubItems();
         }
 
         [SuppressMessage("ReSharper", "InconsistentNaming")]
@@ -215,19 +299,54 @@ namespace JsonEditor
         // ReSharper disable once ClassNeverInstantiated.Global
         internal class Station : INamed
         {
+            public Station(string type, string id, string name)
+            {
+                this.type = type;
+                this.id = id;
+                this.name = name;
+            }
+
             public string type { get; set; }
             public string id { get; set; }
             public string name { get; set; }
 
-            public void Remove(INamed subItem)
+            public INamed create(string _type, string _id, string _name)
             {
-                if (subItem is Arm arm)
-                    items.Remove(arm);
+                return new Station(_type, _id, _name);
             }
 
-            public IEnumerable<INamed> NamedItems => items;
+            public INamed createChild(string _type, string _id, string _name)
+            {
+                return new Arm(_type, _id, _name);
+            }
 
-            public List<Arm> items { get; set; }
+            public void RemoveSubItem(INamed missing_subItem)
+            {
+                if (missing_subItem is Arm arm)
+                {
+                    items.Remove(arm);
+                }
+            }
+
+            public void AddSubItem(INamed subItem)
+            {
+                if (subItem is Arm arm)
+                {
+                    items.Add(arm);
+                }
+            }
+
+            public void AddSubItem(INamed subItem, int index)
+            {
+                if (subItem is Arm arm)
+                {
+                    items.Insert(index, arm);
+                }
+            }
+
+            public IEnumerable<INamed> NamedSubItems() => items;
+
+            public List<Arm> items { get; set; } = new List<Arm>();
         }
 
 
@@ -237,19 +356,52 @@ namespace JsonEditor
         // ReSharper disable once ClassNeverInstantiated.Global
         internal class Arm : INamed
         {
+            public Arm(string type, string id, string name)
+            {
+                this.type = type;
+                this.id = id;
+                this.name = name;
+            }
+
             public string type { get; set; }
             public string id { get; set; }
             public string name { get; set; }
 
-            public void Remove(INamed subItem)
+            public INamed create(string _type, string _id, string _name)
             {
-                if (subItem is Device device)
+                return new Arm(_type, _id, _name);
+            }
+
+            public INamed createChild(string _type, string _id, string _name)
+            {
+                return new Device(_type, _id, _name);
+            }
+
+            public void RemoveSubItem(INamed missing_subItem)
+            {
+                if (missing_subItem is Device device)
                     items.Remove(device);
             }
 
-            public IEnumerable<INamed> NamedItems => items;
+            public void AddSubItem(INamed subItem)
+            {
+                if (subItem is Device device)
+                {
+                    items.Add(device);
+                }
+            }
 
-            public List<Device> items { get; set; }
+            public void AddSubItem(INamed subItem, int index)
+            {
+                if (subItem is Device device)
+                {
+                    items.Insert(index, device);
+                }
+            }
+
+            public IEnumerable<INamed> NamedSubItems() => items;
+
+            public List<Device> items { get; set; } = new List<Device>();
         }
 
 
@@ -259,15 +411,40 @@ namespace JsonEditor
         // ReSharper disable once ClassNeverInstantiated.Global
         internal class Device : INamed
         {
+            public Device(string type, string id, string name)
+            {
+                this.type = type;
+                this.id = id;
+                this.name = name;
+            }
+
             public string type { get; set; }
             public string id { get; set; }
             public string name { get; set; }
 
-            public void Remove(INamed missing_name)
+            public INamed create(string _type, string _id, string _name)
+            {
+                return new Device(_type, _id, _name);
+            }
+
+            public INamed createChild(string missing_type, string missing_id, string missing_name)
+            {
+                return null;
+            }
+
+            public void RemoveSubItem(INamed missing_subItem)
             {
             }
 
-            public IEnumerable<INamed> NamedItems => Enumerable.Empty<INamed>();
+            public void AddSubItem(INamed missing_subItem)
+            {
+            }
+
+            public void AddSubItem(INamed missing_subItem, int missing_index)
+            {
+            }
+
+            public IEnumerable<INamed> NamedSubItems() => Enumerable.Empty<INamed>();
         }
     }
 
