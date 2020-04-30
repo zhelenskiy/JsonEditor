@@ -11,18 +11,18 @@ namespace JsonEditor
     /// </summary>
     public partial class CreationWindow : Window
     {
-        private JsonTreeViewItem _item;
-        private MainWindow _mainWindow;
+        private INode Node { get; }
+        private MainWindow Window { get; }
 
         public CreationWindow()
         {
             InitializeComponent();
         }
 
-        internal CreationWindow(JsonTreeViewItem item, MainWindow mainWindow) : this()
+        internal CreationWindow(INode node, MainWindow window) : this()
         {
-            _item = item;
-            _mainWindow = mainWindow;
+            Node = node;
+            Window = window;
         }
 
         private void CreateButton_Click(object sender, RoutedEventArgs e)
@@ -32,13 +32,13 @@ namespace JsonEditor
 
         private void CreationWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            if (_item == null)
+            if (Node is RootNode)
             {
                 ChildButton.IsChecked = true;
                 BeforeButton.IsEnabled = false;
                 AfterButton.IsEnabled = false;
             }
-            else if (_item.JsonObject is Device || _item.JsonObject.NamedSubItems().Any())
+            else if (Node is NestedNode nested && nested.JsonObject is Device || Node.NamedSubItems().Any())
             {
                 ChildButton.IsEnabled = false;
             }
@@ -46,37 +46,30 @@ namespace JsonEditor
 
         internal void CreateItem()
         {
-            if (_item == null)
+            if (ChildButton.IsChecked == true)
             {
-                _mainWindow.СurStations = new List<Station> {new Station(NewType.Text, NewId.Text, NewName.Text)};
-            }
-            else if (ChildButton.IsChecked == true)
-            {
-                var childJsonObject = _item.JsonObject.createChild(NewType.Text, NewId.Text, NewName.Text);
-                _item.JsonObject.AddSubItem(childJsonObject);
-                _mainWindow.BuildNode(_item, childJsonObject);
+                CreateChild();
             }
             else
             {
-                var parent = MainWindow.GetSelectedTreeViewItemParent(_item);
-                var currentIndex = parent.Items.IndexOf(_item) + (AfterButton.IsChecked == true ? 1 : 0);
-                if (parent is JsonTreeViewItem parentJsonTreeViewItem)
-                {
-                    var neighborJsonObject = parentJsonTreeViewItem
-                        .JsonObject
-                        .createChild(NewType.Text, NewId.Text, NewName.Text);
-                    parentJsonTreeViewItem.JsonObject.AddSubItem(neighborJsonObject, currentIndex);
-                    parentJsonTreeViewItem.Items.Insert(currentIndex,
-                        _mainWindow.JsonTreeViewItemByINamed(neighborJsonObject));
-                }
-                else
-                {
-                    var neighborJsonObject = new Station(NewType.Text, NewId.Text, NewName.Text);
-                    _mainWindow.СurStations.Insert(currentIndex, neighborJsonObject);
-                    ((TreeView) parent).Items.Insert(currentIndex,
-                        _mainWindow.JsonTreeViewItemByINamed(neighborJsonObject));
-                }
+                CreateNeighbor();
             }
+        }
+
+        private void CreateChild()
+        {
+            var childJsonObject = Node.CreateChild(NewType.Text, NewId.Text, NewName.Text);
+            Node.AddSubItem(childJsonObject, null);
+        }
+
+        private void CreateNeighbor()
+        {
+            var node = (NestedNode) Node;
+            var parent = CommonMethods.GetSelectedTreeViewItemParent(Window, node);
+            var currentIndex = parent.NamedSubItems().IndexOf(node.JsonObject) +
+                               (AfterButton.IsChecked == true ? 1 : 0);
+            var createdNeighborJsonObject = parent.CreateChild(NewType.Text, NewId.Text, NewName.Text);
+            parent.AddSubItem(createdNeighborJsonObject, currentIndex);
         }
     }
 }
