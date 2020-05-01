@@ -20,6 +20,7 @@ namespace JsonEditor
     public partial class MainWindow : Window
     {
         private const string JsonFilesFilter = "JSON files (*.json)|*.json|All files (*.*)|*.*";
+        private const string DefaultTitle = "JSON editor";
 
         private string _curFileName;
 
@@ -29,11 +30,13 @@ namespace JsonEditor
             set
             {
                 _curFileName = value;
-                Title = value;
+                Title = value ?? DefaultTitle;
             }
         }
 
         internal RootNode Root { get; set; }
+
+        private String LastSaved = "";
 
         private NestedNode Copied { get; set; }
 
@@ -41,6 +44,7 @@ namespace JsonEditor
         {
             InitializeComponent();
             Root = new RootNode(this, new List<Station>());
+            CurFileName = null;
         }
 
         private void OpenButton_Click(object sender, RoutedEventArgs e)
@@ -117,6 +121,7 @@ namespace JsonEditor
                 throw new JsonEditorException("Invalid JSON file.", exception);
             }
 
+            LastSaved = data;
             CurFileName = path;
         }
 
@@ -142,7 +147,9 @@ namespace JsonEditor
         {
             try
             {
-                File.WriteAllText(path, JsonConvert.SerializeObject(Root.Stations));
+                var contents = JsonConvert.SerializeObject(Root.Stations);
+                File.WriteAllText(path, contents);
+                LastSaved = contents;
             }
             catch (Exception exception)
             {
@@ -194,6 +201,18 @@ namespace JsonEditor
             var createWindow = new CreationWindow(Root, this);
             if (createWindow.ShowDialog() != true) return;
             createWindow.CreateItem();
+        }
+
+        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (Root.Stations.Count == 0 || JsonConvert.SerializeObject(Root.Stations) == LastSaved ||
+                MessageBox.Show("Are you sure that you want to discard the changes?", "Warning", MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning) == MessageBoxResult.Yes)
+            {
+                CurFileName = null;
+                Root = new RootNode(this, new List<Station>());
+                LastSaved = "";
+            }
         }
     }
 }

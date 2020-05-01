@@ -5,9 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:JsonEditor"
         mc:Ignorable="d"
-        Title="JSON editor" Height="450" Width="800">
+        Height="450" Width="800">
     <DockPanel x:Name="Dock" LastChildFill="False">
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+            <Button Background="AliceBlue" Content="New" Margin="5" Padding="2" Click="ButtonBase_OnClick" />
             <Button Background="AliceBlue" Content="Open" Margin="5" Padding="2" Click="OpenButton_Click" />
             <Button Background="AliceBlue" Content="Save" Margin="5" Padding="2" Click="SaveButton_Click" />
             <Button Background="AliceBlue" Content="Save as" Margin="5" Padding="2" Click="SaveAsButton_Click" />
