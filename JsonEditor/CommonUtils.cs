@@ -3,8 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -270,7 +268,7 @@ namespace JsonEditor
 
         private static Random RandomGenerator { get; } = new Random();
 
-        internal static ulong RandomUlong()
+        private static ulong RandomUlong()
         {
             var buf = new byte[8];
             RandomGenerator.NextBytes(buf);
@@ -301,6 +299,17 @@ namespace JsonEditor
             var newIds = new HashSet<string>();
             CheckIds(ids, newIds, currentNode);
             ids.UnionWith(newIds);
+        }
+
+        internal static string GenerateUniqueId(MainWindow window)
+        {
+            string newId;
+            do
+            {
+                newId = RandomUlong().ToString();
+            } while (window.UsedIds.Contains(newId));
+
+            return newId;
         }
     }
 

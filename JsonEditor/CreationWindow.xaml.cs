@@ -52,11 +52,7 @@ namespace JsonEditor
                 NeighborButtonHandle();
             }
 
-            string newId;
-            do
-            {
-                newId = CommonMethods.RandomUlong().ToString();
-            } while (Window.UsedIds.Contains(newId));
+            var newId = CommonMethods.GenerateUniqueId(Window);
 
             NewId.Text = newId;
         }
