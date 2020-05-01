@@ -50,9 +50,12 @@ namespace JsonEditor
 
         private void OpenButton_Click(object sender, RoutedEventArgs e)
         {
-            var dlg = new OpenFileDialog {Filter = JsonFilesFilter};
-            if (dlg.ShowDialog() != true) return;
-            HandleException(() => ReadJson(dlg.FileName), "open the file");
+            if (NoUnsavedData())
+            {
+                var dlg = new OpenFileDialog {Filter = JsonFilesFilter};
+                if (dlg.ShowDialog() != true) return;
+                HandleException(() => ReadJson(dlg.FileName), "open the file");
+            }
         }
 
         internal void Create_Click(object sender, RoutedEventArgs e)
@@ -208,6 +211,12 @@ namespace JsonEditor
             createWindow.CreateItem();
         }
 
+        private bool NoUnsavedData() =>
+            LastSaved == "" && Root.Stations.Count == 0 || JsonConvert.SerializeObject(Root.Stations) == LastSaved ||
+            MessageBox.Show("Are you sure that you want to discard the changes?", "Warning",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning) == MessageBoxResult.Yes;
+
         private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
         {
             if (Root.Stations.Count == 0 && CurFileName == null && LastSaved == "")
@@ -215,10 +224,7 @@ namespace JsonEditor
                 MessageBox.Show("Empty file is already opened!", "Notification", MessageBoxButton.OK,
                     MessageBoxImage.Information);
             }
-            else if (Root.Stations.Count == 0 || JsonConvert.SerializeObject(Root.Stations) == LastSaved ||
-                     MessageBox.Show("Are you sure that you want to discard the changes?", "Warning",
-                         MessageBoxButton.YesNo,
-                         MessageBoxImage.Warning) == MessageBoxResult.Yes)
+            else if (NoUnsavedData())
             {
                 CurFileName = null;
                 Root = new RootNode(this, new List<Station>());

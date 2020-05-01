@@ -51,6 +51,14 @@ namespace JsonEditor
             {
                 NeighborButtonHandle();
             }
+
+            string newId;
+            do
+            {
+                newId = CommonMethods.RandomUlong().ToString();
+            } while (Window.UsedIds.Contains(newId));
+
+            NewId.Text = newId;
         }
 
         internal void CreateItem()

@@ -270,11 +270,11 @@ namespace JsonEditor
 
         private static Random RandomGenerator { get; } = new Random();
 
-        internal static long RandomLong()
+        internal static ulong RandomUlong()
         {
             var buf = new byte[8];
             RandomGenerator.NextBytes(buf);
-            return BitConverter.ToInt64(buf, 0);
+            return BitConverter.ToUInt64(buf, 0);
         }
 
         private static void CheckIds(ISet<string> ids, ISet<string> newIds, INamed currentNode)
