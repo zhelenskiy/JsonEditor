@@ -17,8 +17,7 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,5,0,0">
-            <TextBlock>New type:</TextBlock>
-            <TextBox Name="NewType" MinWidth="250">Print the new type here</TextBox>
+            <TextBlock Name="TypeName">New object:</TextBlock>
             <TextBlock>New id:</TextBlock>
             <TextBox Name="NewId" MinWidth="250">Print the new id here</TextBox>
             <TextBlock>New name:</TextBlock>
@@ -27,11 +26,11 @@
 
         <StackPanel Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,5,0,0">
             <RadioButton Name="BeforeButton" Content="Create before the current item" HorizontalAlignment="Left"
-                         VerticalAlignment="Top" IsChecked="True"/>
+                         VerticalAlignment="Top" IsChecked="True" Checked="NeighborButton_Checked"/>
             <RadioButton Name="AfterButton" Content="Create after the current item" HorizontalAlignment="Left"
-                         VerticalAlignment="Top" />
+                         VerticalAlignment="Top"  Checked="NeighborButton_Checked"/>
             <RadioButton Name="ChildButton" Content="Create the first child" HorizontalAlignment="Left"
-                         VerticalAlignment="Top" />
+                         VerticalAlignment="Top" Checked="ChildButton_Checked" />
         </StackPanel>
         <WrapPanel Grid.Row="2" HorizontalAlignment="Right" Margin="0,10,0,0">
             <Button IsDefault="True" MinWidth="60" Margin="0,0,10,0" Click="CreateButton_Click">Create</Button>

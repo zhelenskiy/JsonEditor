@@ -20,8 +20,9 @@ namespace JsonEditor
         public interface INamed
         {
             string name { get; set; }
+            string type { get; }
 
-            INamed CreateChild(string _type, string _id, string _name);
+            INamed CreateChild(string _id, string _name);
 
             bool RemoveSubItem(INamed missing_subItem);
             bool AddSubItem(INamed subItem, int? index);
@@ -35,18 +36,17 @@ namespace JsonEditor
         // ReSharper disable once ClassNeverInstantiated.Global
         public class Station : INamed
         {
-            public Station(string type, string id, string name)
+            public Station(string id, string name)
             {
-                this.type = type;
                 this.id = id;
                 this.name = name;
             }
 
-            public string type { get; }
+            public string type => GetType().Name.ToLower();
             public string id { get; }
             public string name { get; set; }
 
-            public INamed CreateChild(string _type, string _id, string _name) => new Arm(_type, _id, _name);
+            public INamed CreateChild(string _id, string _name) => new Arm(_id, _name);
 
             public bool RemoveSubItem(INamed subItem) => subItem is Arm arm && items.Remove(arm);
 
@@ -65,18 +65,17 @@ namespace JsonEditor
         // ReSharper disable once ClassNeverInstantiated.Global
         public class Arm : INamed
         {
-            public Arm(string type, string id, string name)
+            public Arm(string id, string name)
             {
-                this.type = type;
                 this.id = id;
                 this.name = name;
             }
 
-            public string type { get; }
+            public string type => GetType().Name.ToLower();
             public string id { get; }
             public string name { get; set; }
 
-            public INamed CreateChild(string _type, string _id, string _name) => new Device(_type, _id, _name);
+            public INamed CreateChild(string _id, string _name) => new Device( _id, _name);
 
             public bool RemoveSubItem(INamed subItem) => subItem is Device device && items.Remove(device);
 
@@ -95,18 +94,16 @@ namespace JsonEditor
         // ReSharper disable once ClassNeverInstantiated.Global
         public class Device : INamed
         {
-            public Device(string type, string id, string name)
+            public Device(string id, string name)
             {
-                this.type = type;
                 this.id = id;
                 this.name = name;
             }
-
-            public string type { get; }
+            public string type => GetType().Name.ToLower();
             public string id { get; }
             public string name { get; set; }
 
-            public INamed CreateChild(string missing_type, string missing_id, string missing_name) => null;
+            public INamed CreateChild(string missing_id, string missing_name) => null;
 
             public bool RemoveSubItem(INamed missing_subItem) => false;
 
@@ -122,7 +119,7 @@ namespace JsonEditor
 
         bool AddSubItem(INamed subItem, int? index);
 
-        INamed CreateChild(string _type, string _id, string _name);
+        INamed CreateChild(string _id, string _name);
 
         String NodeName { get; set; }
 
@@ -142,7 +139,7 @@ namespace JsonEditor
             JsonObject = jsonObject;
         }
 
-        public INamed CreateChild(string _type, string _id, string _name) => JsonObject.CreateChild(_type, _id, _name);
+        public INamed CreateChild(string _id, string _name) => JsonObject.CreateChild(_id, _name);
 
         public string NodeName
         {
@@ -235,7 +232,7 @@ namespace JsonEditor
         private static NestedNode JsonTreeViewItemFromINamed(MainWindow window, INamed item)
         {
             var contextMenu = new ContextMenu();
-            var v = new NestedNode(window, item) {Header = item.name, ContextMenu = contextMenu};
+            var v = new NestedNode(window, item) {Header = item.name, ContextMenu = contextMenu, IsExpanded = true};
             var create = new JsonTreeViewMenuItem {Header = "Create", Source = v};
             create.Click += window.Create_Click;
             contextMenu.Items.Add(create);
@@ -303,7 +300,7 @@ namespace JsonEditor
             return false;
         }
 
-        public INamed CreateChild(string _type, string _id, string _name) => new Station(_type, _id, _name);
+        public INamed CreateChild(string _id, string _name) => new Station(_id, _name);
 
         public string NodeName { get; set; }
 

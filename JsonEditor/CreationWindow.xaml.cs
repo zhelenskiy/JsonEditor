@@ -42,6 +42,15 @@ namespace JsonEditor
             {
                 ChildButton.IsEnabled = false;
             }
+
+            if (ChildButton.IsChecked == true)
+            {
+                ChildButtonHandle();
+            }
+            else
+            {
+                NeighborButtonHandle();
+            }
         }
 
         internal void CreateItem()
@@ -58,7 +67,7 @@ namespace JsonEditor
 
         private void CreateChild()
         {
-            var childJsonObject = Node.CreateChild(NewType.Text, NewId.Text, NewName.Text);
+            var childJsonObject = Node.CreateChild(NewId.Text, NewName.Text);
             Node.AddSubItem(childJsonObject, null);
         }
 
@@ -68,8 +77,19 @@ namespace JsonEditor
             var parent = CommonMethods.GetSelectedTreeViewItemParent(Window, node);
             var currentIndex = parent.NamedSubItems().IndexOf(node.JsonObject) +
                                (AfterButton.IsChecked == true ? 1 : 0);
-            var createdNeighborJsonObject = parent.CreateChild(NewType.Text, NewId.Text, NewName.Text);
+            var createdNeighborJsonObject = parent.CreateChild(NewId.Text, NewName.Text);
             parent.AddSubItem(createdNeighborJsonObject, currentIndex);
         }
+
+        private void NeighborButton_Checked(object sender, RoutedEventArgs e) => NeighborButtonHandle();
+
+        private string NeighborButtonHandle() =>
+            TypeName.Text = Node == null ? "" : $"New {((NestedNode) Node).JsonObject.type}:";
+
+        private void ChildButton_Checked(object sender, RoutedEventArgs e) =>
+            ChildButtonHandle();
+
+        private string ChildButtonHandle() =>
+            TypeName.Text = Node == null ? "" : $"New {Node.CreateChild("", "").type}:";
     }
 }
