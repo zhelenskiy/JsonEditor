@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using JsonEditor.DataClasses;
 using Microsoft.Win32;
 using Newtonsoft.Json;
@@ -20,6 +18,7 @@ namespace JsonEditor
     public partial class MainWindow : Window
     {
         private const string JsonFilesFilter = "JSON files (*.json)|*.json|All files (*.*)|*.*";
+
         private const string DefaultTitle = "JSON editor";
 
         private string _curFileName;
@@ -39,6 +38,7 @@ namespace JsonEditor
         private string LastSaved { get; set; } = "";
 
         private NestedNode Copied { get; set; }
+
         internal ISet<string> UsedIds { get; set; } = new HashSet<string>();
 
         public MainWindow()
@@ -60,13 +60,13 @@ namespace JsonEditor
 
         internal void Create_Click(object sender, RoutedEventArgs e)
         {
-            HandleException((() =>
+            HandleException(() =>
             {
                 var jsonTreeViewMenuItem = (JsonTreeViewMenuItem) sender;
                 var createWindow = new CreationWindow(jsonTreeViewMenuItem?.Source, this);
                 if (createWindow.ShowDialog() != true) return;
                 createWindow.CreateItem();
-            }), "create such item!");
+            }, "create such item!");
         }
 
         internal void Paste_Click(object sender, RoutedEventArgs e)

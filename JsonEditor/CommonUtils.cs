@@ -119,7 +119,7 @@ namespace JsonEditor
 
         bool AddSubItem(INamed subItem, int? index);
 
-        INamed CreateChild(string _id, string _name);
+        INamed CreateChild(string id, string name);
 
         string NodeName { get; set; }
 
@@ -139,7 +139,7 @@ namespace JsonEditor
             JsonObject = jsonObject;
         }
 
-        public INamed CreateChild(string _id, string _name) => JsonObject.CreateChild(_id, _name);
+        public INamed CreateChild(string id, string name) => JsonObject.CreateChild(id, name);
 
         public string NodeName
         {
@@ -256,7 +256,7 @@ namespace JsonEditor
 
         internal static int IndexOf<T>(this IEnumerable<T> enumerable, T item)
         {
-            int i = 0;
+            var i = 0;
             foreach (var other in enumerable)
             {
                 if (Equals(other, item)) return i;
@@ -365,7 +365,7 @@ namespace JsonEditor
             return false;
         }
 
-        public INamed CreateChild(string _id, string _name) => new Station(_id, _name);
+        public INamed CreateChild(string id, string name) => new Station(id, name);
 
         public string NodeName { get; set; }
 
