@@ -18,10 +18,10 @@
 
         <StackPanel Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,5,0,0">
             <TextBlock Name="TypeName">New object:</TextBlock>
-            <TextBlock>New id:</TextBlock>
-            <TextBox Name="NewId" MinWidth="250">Print the new id here</TextBox>
             <TextBlock>New name:</TextBlock>
             <TextBox Name="NewName" MinWidth="250">Print the new name here</TextBox>
+            <TextBlock>New id:</TextBlock>
+            <TextBox Name="NewId" MinWidth="250">Print the new id here</TextBox>
         </StackPanel>
 
         <StackPanel Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,5,0,0">

@@ -19,8 +19,9 @@ namespace JsonEditor
         [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
         public interface INamed
         {
-            string name { get; set; }
             string type { get; }
+            string id { get; }
+            string name { get; set; }
 
             INamed CreateChild(string _id, string _name);
 
@@ -75,7 +76,7 @@ namespace JsonEditor
             public string id { get; }
             public string name { get; set; }
 
-            public INamed CreateChild(string _id, string _name) => new Device( _id, _name);
+            public INamed CreateChild(string _id, string _name) => new Device(_id, _name);
 
             public bool RemoveSubItem(INamed subItem) => subItem is Device device && items.Remove(device);
 
@@ -99,6 +100,7 @@ namespace JsonEditor
                 this.id = id;
                 this.name = name;
             }
+
             public string type => GetType().Name.ToLower();
             public string id { get; }
             public string name { get; set; }
@@ -121,7 +123,7 @@ namespace JsonEditor
 
         INamed CreateChild(string _id, string _name);
 
-        String NodeName { get; set; }
+        string NodeName { get; set; }
 
         IEnumerable<INamed> NamedSubItems();
     }
@@ -163,9 +165,12 @@ namespace JsonEditor
             return false;
         }
 
-        public bool AddSubItem(INamed subItem, int? index) =>
-            JsonObject.AddSubItem(subItem, index)
-            && CommonMethods.AddInterfaceNodeFromINamed(Window, this, subItem, index);
+        public bool AddSubItem(INamed subItem, int? index)
+        {
+            CommonMethods.CheckAndAddIds(Window.UsedIds, subItem);
+            return JsonObject.AddSubItem(subItem, index)
+                   && CommonMethods.AddInterfaceNodeFromINamed(Window, this, subItem, index);
+        }
 
         public IEnumerable<INamed> NamedSubItems() => JsonObject.NamedSubItems();
     }
@@ -262,6 +267,41 @@ namespace JsonEditor
 
             return -1;
         }
+
+        private static Random RandomGenerator { get; } = new Random();
+
+        internal static long RandomLong()
+        {
+            var buf = new byte[8];
+            RandomGenerator.NextBytes(buf);
+            return BitConverter.ToInt64(buf, 0);
+        }
+
+        private static void CheckIds(ISet<string> ids, ISet<string> newIds, INamed currentNode)
+        {
+            if (ids.Contains(currentNode.id))
+            {
+                throw new JsonEditorException($"Id \"{currentNode.id}\" is already used!");
+            }
+
+            if (newIds.Contains(currentNode.id))
+            {
+                throw new JsonEditorException($"Id \"{currentNode.id}\" is used more than once!");
+            }
+
+            newIds.Add(currentNode.id);
+            foreach (var subItem in currentNode.NamedSubItems())
+            {
+                CheckIds(ids, newIds, subItem);
+            }
+        }
+
+        internal static void CheckAndAddIds(ISet<string> ids, INamed currentNode)
+        {
+            var newIds = new HashSet<string>();
+            CheckIds(ids, newIds, currentNode);
+            ids.UnionWith(newIds);
+        }
     }
 
     public class RootNode : INode
@@ -270,7 +310,22 @@ namespace JsonEditor
         {
             Window = window;
             Stations = stations;
+            var oldItems = Window.JsonTree.Items.Cast<object>().ToList();
             Window.JsonTree.Items.Clear();
+
+            var usedIds = new HashSet<string>();
+            try
+            {
+                stations.ForEach(station => CommonMethods.CheckAndAddIds(usedIds, station));
+            }
+            catch (JsonEditorException)
+            {
+                oldItems.ForEach(oldItem => Window.JsonTree.Items.Add(oldItem));
+                throw;
+            }
+
+            Window.UsedIds = usedIds;
+
             stations.ForEach(station => CommonMethods.AddInterfaceNodeFromINamed(Window, Window.JsonTree, station));
         }
 
@@ -290,6 +345,7 @@ namespace JsonEditor
 
         public bool AddSubItem(INamed subItem, int? index)
         {
+            CommonMethods.CheckAndAddIds(Window.UsedIds, subItem);
             if (subItem is Station station)
             {
                 Stations.AddWithNullableIndex(station, index);

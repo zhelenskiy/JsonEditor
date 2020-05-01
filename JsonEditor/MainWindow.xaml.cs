@@ -34,11 +34,12 @@ namespace JsonEditor
             }
         }
 
-        internal RootNode Root { get; set; }
+        internal RootNode Root { get; private set; }
 
-        private String LastSaved = "";
+        private string LastSaved { get; set; } = "";
 
         private NestedNode Copied { get; set; }
+        internal ISet<string> UsedIds { get; set; } = new HashSet<string>();
 
         public MainWindow()
         {
@@ -56,10 +57,13 @@ namespace JsonEditor
 
         internal void Create_Click(object sender, RoutedEventArgs e)
         {
-            var jsonTreeViewMenuItem = (JsonTreeViewMenuItem) sender;
-            var createWindow = new CreationWindow(jsonTreeViewMenuItem?.Source, this);
-            if (createWindow.ShowDialog() != true) return;
-            createWindow.CreateItem();
+            HandleException((() =>
+            {
+                var jsonTreeViewMenuItem = (JsonTreeViewMenuItem) sender;
+                var createWindow = new CreationWindow(jsonTreeViewMenuItem?.Source, this);
+                if (createWindow.ShowDialog() != true) return;
+                createWindow.CreateItem();
+            }), "create such item!");
         }
 
         internal void Paste_Click(object sender, RoutedEventArgs e)
@@ -139,7 +143,7 @@ namespace JsonEditor
         {
             if (CurFileName == null)
             {
-                throw new JsonEditorException("No opened files");
+                throw new JsonEditorException("No path to save to.");
             }
         }
 
@@ -190,24 +194,31 @@ namespace JsonEditor
             {
                 var menuItem = new MenuItem {Header = "Add the first Station"};
                 var contextMenu = new ContextMenu();
-                menuItem.Click += MenuItem_Click;
+                menuItem.Click += RootNodeCreationButton_Click;
                 contextMenu.Items.Add(menuItem);
                 JsonTree.ContextMenu = contextMenu;
             }
         }
 
-        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        private void RootNodeCreationButton_Click(object sender, RoutedEventArgs e)
         {
             var createWindow = new CreationWindow(Root, this);
             if (createWindow.ShowDialog() != true) return;
+            UsedIds.Clear();
             createWindow.CreateItem();
         }
 
         private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
         {
-            if (Root.Stations.Count == 0 || JsonConvert.SerializeObject(Root.Stations) == LastSaved ||
-                MessageBox.Show("Are you sure that you want to discard the changes?", "Warning", MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning) == MessageBoxResult.Yes)
+            if (Root.Stations.Count == 0 && CurFileName == null && LastSaved == "")
+            {
+                MessageBox.Show("Empty file is already opened!", "Notification", MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+            else if (Root.Stations.Count == 0 || JsonConvert.SerializeObject(Root.Stations) == LastSaved ||
+                     MessageBox.Show("Are you sure that you want to discard the changes?", "Warning",
+                         MessageBoxButton.YesNo,
+                         MessageBoxImage.Warning) == MessageBoxResult.Yes)
             {
                 CurFileName = null;
                 Root = new RootNode(this, new List<Station>());
