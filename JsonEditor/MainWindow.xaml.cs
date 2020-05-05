@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using JsonEditor.DataClasses;
 using Microsoft.Win32;
 using Newtonsoft.Json;
@@ -38,7 +36,7 @@ namespace JsonEditor
 
         private string LastSaved { get; set; } = "";
 
-        internal NameNode Copied { get; set; }
+        internal NameNode Copied { get; private set; }
         internal ISet<string> UsedIds { get; set; } = new HashSet<string>();
 
         public MainWindow()

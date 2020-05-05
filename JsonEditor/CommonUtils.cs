@@ -239,18 +239,25 @@ namespace JsonEditor
             var v = new NestedNode(window, item) {Header = item.name, ContextMenu = contextMenu, IsExpanded = true};
             var create = new JsonTreeViewMenuItem {Header = "Create", Source = v};
             create.Click += window.Create_Click;
-            contextMenu.Items.Add(create);
             var rename = new JsonTreeViewMenuItem {Header = "Rename", Source = v};
             rename.Click += MainWindow.Rename_Click;
-            contextMenu.Items.Add(rename);
             var remove = new JsonTreeViewMenuItem {Header = "Remove", Source = v};
             remove.Click += window.Remove_Click;
-            contextMenu.Items.Add(remove);
             var copy = new JsonTreeViewMenuItem {Header = "Copy", Source = v};
             copy.Click += window.Copy_Click;
-            contextMenu.Items.Add(copy);
             var paste = new JsonTreeViewMenuItem {Header = "Paste", Source = v};
             paste.Click += window.Paste_Click;
+            var cut = new JsonTreeViewMenuItem { Header = "Cut", Source = v};
+            cut.Click += (sender, args) =>
+            {
+                window.Copy_Click(sender, args);
+                window.Remove_Click(sender, args);
+            };
+            contextMenu.Items.Add(create);
+            contextMenu.Items.Add(rename);
+            contextMenu.Items.Add(remove);
+            contextMenu.Items.Add(cut);
+            contextMenu.Items.Add(copy);
             contextMenu.Items.Add(paste);
             return v;
         }
