@@ -14,10 +14,7 @@ namespace JsonEditor
         private INode Node { get; }
         private MainWindow Window { get; }
 
-        public CreationWindow()
-        {
-            InitializeComponent();
-        }
+        public CreationWindow() => InitializeComponent();
 
         internal CreationWindow(INode node, MainWindow window) : this()
         {
@@ -25,10 +22,7 @@ namespace JsonEditor
             Window = window;
         }
 
-        private void CreateButton_Click(object sender, RoutedEventArgs e)
-        {
-            DialogResult = true;
-        }
+        private void CreateButton_Click(object sender, RoutedEventArgs e) => DialogResult = true;
 
         private void CreationWindow_Loaded(object sender, RoutedEventArgs e)
         {

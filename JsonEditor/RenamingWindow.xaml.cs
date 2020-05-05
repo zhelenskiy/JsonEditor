@@ -36,7 +36,7 @@ namespace JsonEditor
         public string ResultName
         {
             get => NewName.Text;
-            set => NewName.Text = value;
+            private set => NewName.Text = value;
         }
     }
 }

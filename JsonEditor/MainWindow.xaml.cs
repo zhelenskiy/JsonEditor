@@ -38,7 +38,7 @@ namespace JsonEditor
 
         private string LastSaved { get; set; } = "";
 
-        private NestedNode Copied { get; set; }
+        internal NameNode Copied { get; set; }
         internal ISet<string> UsedIds { get; set; } = new HashSet<string>();
 
         public MainWindow()
@@ -60,37 +60,45 @@ namespace JsonEditor
 
         internal void Create_Click(object sender, RoutedEventArgs e)
         {
-            HandleException((() =>
+            HandleException(() =>
             {
                 var jsonTreeViewMenuItem = (JsonTreeViewMenuItem) sender;
-                var createWindow = new CreationWindow(jsonTreeViewMenuItem?.Source, this);
-                if (createWindow.ShowDialog() != true) return;
-                createWindow.CreateItem();
-            }), "create such item!");
+                var creationWindow = new CreationWindow(jsonTreeViewMenuItem?.Source, this);
+                if (creationWindow.ShowDialog() != true) return;
+                creationWindow.CreateItem();
+            }, "create such item!");
         }
 
         internal void Paste_Click(object sender, RoutedEventArgs e)
         {
-            HandleException(() =>
+            if (Copied == null)
             {
-                var selected = sender as JsonTreeViewMenuItem;
-                AssertTypeEquality(Copied.JsonObject, selected?.Source.JsonObject);
-            }, "paste the element due to the type discrepancy");
-        }
+                MessageBox.Show("Nothing is copied!", "Can not paste", MessageBoxButton.OK,
+                    MessageBoxImage.Exclamation);
+            }
+            else
+            {
+                var selected = (JsonTreeViewMenuItem) sender;
+                var pastingWindow = new PastingWindow(selected.Source, this);
+                if (pastingWindow.ShowDialog() != true) return;
+                var caption = "Be careful";
 
-        private void AssertTypeEquality(object copiedJsonObject, object sourceJsonObject)
-        {
-            if (copiedJsonObject.GetType() != sourceJsonObject.GetType())
-            {
-                throw new JsonEditorException(
-                    "Couldn't match the type of the first object against the type of the second object.");
+                switch (pastingWindow.PasteItem())
+                {
+                    case NameNode.PasteStatus.PartiallyAdded:
+                        MessageBox.Show("Copied fragment of JSON was only partially pasted!", caption,
+                            MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                        break;
+                    case NameNode.PasteStatus.NotAdded:
+                        MessageBox.Show("Copied fragment was not pasted at all!", caption, MessageBoxButton.OK,
+                            MessageBoxImage.Asterisk);
+                        break;
+                }
             }
         }
 
-        internal void Copy_Click(object sender, RoutedEventArgs e)
-        {
-            Copied = (sender as JsonTreeViewMenuItem)?.Source;
-        }
+        internal void Copy_Click(object sender, RoutedEventArgs e) =>
+            Copied = new NameNode(((JsonTreeViewMenuItem) sender).Source.JsonObject, this);
 
         internal void Remove_Click(object sender, RoutedEventArgs e)
         {
@@ -174,7 +182,8 @@ namespace JsonEditor
             }
             catch (JsonEditorException e)
             {
-                MessageBox.Show($"{e.Message}\n{e.InnerException?.Message ?? ""}", $"Cannot {actionName}!");
+                MessageBox.Show($"{e.Message}\n{e.InnerException?.Message ?? ""}", $"Cannot {actionName}!",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -195,10 +204,17 @@ namespace JsonEditor
             }
             else
             {
-                var menuItem = new MenuItem {Header = "Add the first Station"};
                 var contextMenu = new ContextMenu();
-                menuItem.Click += RootNodeCreationButton_Click;
-                contextMenu.Items.Add(menuItem);
+                var addMenuItem = new MenuItem {Header = "Add the first Station"};
+                addMenuItem.Click += RootNodeCreationButton_Click;
+                contextMenu.Items.Add(addMenuItem);
+                if (Copied != null)
+                {
+                    var pasteMenuItem = new MenuItem {Header = "Paste"};
+                    pasteMenuItem.Click += (o, args) => Copied.AddToINode(Root, null);
+                    contextMenu.Items.Add(pasteMenuItem);
+                }
+
                 JsonTree.ContextMenu = contextMenu;
             }
         }

@@ -117,7 +117,7 @@ namespace JsonEditor
     {
         bool RemoveSubItem(NestedNode subItem);
 
-        bool AddSubItem(INamed subItem, int? index);
+        INode AddSubItem(INamed subItem, int? index);
 
         INamed CreateChild(string _id, string _name);
 
@@ -163,11 +163,12 @@ namespace JsonEditor
             return false;
         }
 
-        public bool AddSubItem(INamed subItem, int? index)
+        public INode AddSubItem(INamed subItem, int? index)
         {
             CommonMethods.CheckAndAddIds(Window.UsedIds, subItem);
             return JsonObject.AddSubItem(subItem, index)
-                   && CommonMethods.AddInterfaceNodeFromINamed(Window, this, subItem, index);
+                ? CommonMethods.AddInterfaceNodeFromINamed(Window, this, subItem, index)
+                : null;
         }
 
         public IEnumerable<INamed> NamedSubItems() => JsonObject.NamedSubItems();
@@ -220,7 +221,7 @@ namespace JsonEditor
         }
 
 
-        internal static bool AddInterfaceNodeFromINamed(MainWindow window, ItemsControl parent, INamed item,
+        internal static INode AddInterfaceNodeFromINamed(MainWindow window, ItemsControl parent, INamed item,
             int? index = null)
         {
             var v = JsonTreeViewItemFromINamed(window, item);
@@ -229,7 +230,7 @@ namespace JsonEditor
                 AddInterfaceNodeFromINamed(window, v, property);
             }
 
-            return parent.Items.AddWithNullableIndex(v, index);
+            return parent.Items.AddWithNullableIndex(v, index) ? v : null;
         }
 
         private static NestedNode JsonTreeViewItemFromINamed(MainWindow window, INamed item)
@@ -352,17 +353,16 @@ namespace JsonEditor
             return false;
         }
 
-        public bool AddSubItem(INamed subItem, int? index)
+        public INode AddSubItem(INamed subItem, int? index)
         {
             CommonMethods.CheckAndAddIds(Window.UsedIds, subItem);
             if (subItem is Station station)
             {
                 Stations.AddWithNullableIndex(station, index);
-                CommonMethods.AddInterfaceNodeFromINamed(Window, Window.JsonTree, subItem, index);
-                return true;
+                return CommonMethods.AddInterfaceNodeFromINamed(Window, Window.JsonTree, subItem, index);
             }
 
-            return false;
+            return null;
         }
 
         public INamed CreateChild(string _id, string _name) => new Station(_id, _name);
@@ -370,5 +370,42 @@ namespace JsonEditor
         public string NodeName { get; set; }
 
         public IEnumerable<INamed> NamedSubItems() => Stations;
+    }
+    internal class NameNode
+    {
+        private MainWindow Window { get; }
+
+        private NameNode(NameNode[] items, string name, MainWindow window)
+        {
+            Items = items;
+            Name = name;
+            Window = window;
+        }
+
+        public NameNode(INamed fullNode, MainWindow window)
+            : this(fullNode.NamedSubItems().Select(t => new NameNode(t, window)).ToArray(), fullNode.name, window)
+        {
+        }
+
+        private string Name { get; }
+        private NameNode[] Items { get; }
+
+        internal enum PasteStatus
+        {
+            FullyAdded,
+            PartiallyAdded,
+            NotAdded
+        }
+
+        public PasteStatus AddToINode(INode destination, int? index)
+        {
+            var named = destination.CreateChild(CommonMethods.GenerateUniqueId(Window), Name);
+            if (named == null) return PasteStatus.NotAdded;
+            var node = destination.AddSubItem(named, index);
+            if (node == null) return PasteStatus.NotAdded;
+            bool isFullyAdded = Items.Aggregate(true,
+                (current, childNameNode) => current & childNameNode.AddToINode(node, null) == PasteStatus.FullyAdded);
+            return isFullyAdded ? PasteStatus.FullyAdded : PasteStatus.PartiallyAdded;
+        }
     }
 }
