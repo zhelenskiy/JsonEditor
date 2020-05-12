@@ -217,6 +217,12 @@ namespace JsonEditor
             }
         }
 
+        internal void Cut_Click(object sender, RoutedEventArgs args)
+        {
+            Copy_Click(sender, args);
+            Remove_Click(sender, args);
+        }
+
         private void RootNodeCreationButton_Click(object sender, RoutedEventArgs e)
         {
             var createWindow = new CreationWindow(Root, this);
@@ -231,7 +237,7 @@ namespace JsonEditor
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning) == MessageBoxResult.Yes;
 
-        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        private void NewButton_OnClick(object sender, RoutedEventArgs e)
         {
             if (Root.Stations.Count == 0 && CurFileName == null && LastSaved == "")
             {
@@ -257,6 +263,46 @@ namespace JsonEditor
             else
             {
                 CurrentId.Text = CurrentName.Text = CurrentType.Text = "";
+            }
+        }
+
+        private void MainWindow_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyboardDevice.Modifiers.HasFlag(ModifierKeys.Control))
+            {
+                switch (e.Key)
+                {
+                    case Key.N:
+                        NewButton_OnClick(NewButton, e);
+                        break;
+                    case Key.O:
+                        OpenButton_Click(OpenButton, e);
+                        break;
+                    case Key.S when e.KeyboardDevice.Modifiers.HasFlag(ModifierKeys.Shift):
+                        SaveAsButton_Click(SaveAsButton, e);
+                        break;
+                    case Key.S:
+                        SaveButton_Click(SaveButton, e);
+                        break;
+                }
+
+                var contextMenuItems = (JsonTree.SelectedItem as NestedNode)?.ContextMenu?.Items
+                    .Cast<JsonTreeViewMenuItem>().ToDictionary(t => t.Operation, t => t);
+                if (contextMenuItems != null)
+                {
+                    switch (e.Key)
+                    {
+                        case Key.C:
+                            Copy_Click(contextMenuItems[JsonTreeViewMenuItem.OperationType.Copy], e);
+                            break;
+                        case Key.V:
+                            Paste_Click(contextMenuItems[JsonTreeViewMenuItem.OperationType.Paste], e);
+                            break;
+                        case Key.X:
+                            Cut_Click(contextMenuItems[JsonTreeViewMenuItem.OperationType.Cut], e);
+                            break;
+                    }
+                }
             }
         }
     }

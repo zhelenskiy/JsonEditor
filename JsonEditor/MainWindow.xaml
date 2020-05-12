@@ -5,13 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:JsonEditor"
         mc:Ignorable="d"
-        Height="450" Width="800" MinWidth="256" MinHeight="128">
+        Height="450" Width="800" MinWidth="256" MinHeight="128"
+        KeyDown="MainWindow_OnKeyDown">
     <DockPanel x:Name="Dock" LastChildFill="True">
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
-            <Button Background="AliceBlue" Content="New" Margin="5" Padding="2" Click="ButtonBase_OnClick" />
-            <Button Background="AliceBlue" Content="Open" Margin="5" Padding="2" Click="OpenButton_Click" />
-            <Button Background="AliceBlue" Content="Save" Margin="5" Padding="2" Click="SaveButton_Click" />
-            <Button Background="AliceBlue" Content="Save as" Margin="5" Padding="2" Click="SaveAsButton_Click" />
+            <Button x:Name="NewButton" Background="AliceBlue" Content="New" Margin="5" Padding="2" Click="NewButton_OnClick" />
+            <Button x:Name="OpenButton" Background="AliceBlue" Content="Open" Margin="5" Padding="2" Click="OpenButton_Click" />
+            <Button x:Name="SaveButton" Background="AliceBlue" Content="Save" Margin="5" Padding="2" Click="SaveButton_Click" />
+            <Button x:Name="SaveAsButton" Background="AliceBlue" Content="Save as" Margin="5" Padding="2" Click="SaveAsButton_Click" />
         </StackPanel>
         <GridSplitter Height="100" Margin="0,27,0,-111" VerticalAlignment="Top" Width="5" />
 

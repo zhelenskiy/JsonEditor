@@ -180,6 +180,12 @@ namespace JsonEditor
 
     internal class JsonTreeViewMenuItem : MenuItem
     {
+        internal enum OperationType
+        {
+            Create, Rename, Remove, Copy, Paste, Cut
+        }
+
+        public OperationType Operation { get; set; }
         public NestedNode Source { get; set; }
     }
 
@@ -241,22 +247,18 @@ namespace JsonEditor
         {
             var contextMenu = new ContextMenu();
             var v = new NestedNode(window, item) {Header = item.name, ContextMenu = contextMenu, IsExpanded = true};
-            var create = new JsonTreeViewMenuItem {Header = "Create", Source = v};
+            var create = new JsonTreeViewMenuItem {Operation = JsonTreeViewMenuItem.OperationType.Create, Header = "Create", Source = v};
             create.Click += window.Create_Click;
-            var rename = new JsonTreeViewMenuItem {Header = "Rename", Source = v};
+            var rename = new JsonTreeViewMenuItem { Operation = JsonTreeViewMenuItem.OperationType.Rename, Header = "Rename", Source = v};
             rename.Click += MainWindow.Rename_Click;
-            var remove = new JsonTreeViewMenuItem {Header = "Remove", Source = v};
+            var remove = new JsonTreeViewMenuItem { Operation = JsonTreeViewMenuItem.OperationType.Remove, Header = "Remove", Source = v};
             remove.Click += window.Remove_Click;
-            var copy = new JsonTreeViewMenuItem {Header = "Copy", Source = v};
+            var copy = new JsonTreeViewMenuItem { Operation = JsonTreeViewMenuItem.OperationType.Copy, Header = "Copy", Source = v};
             copy.Click += window.Copy_Click;
-            var paste = new JsonTreeViewMenuItem {Header = "Paste", Source = v};
+            var paste = new JsonTreeViewMenuItem { Operation = JsonTreeViewMenuItem.OperationType.Paste, Header = "Paste", Source = v};
             paste.Click += window.Paste_Click;
-            var cut = new JsonTreeViewMenuItem { Header = "Cut", Source = v};
-            cut.Click += (sender, args) =>
-            {
-                window.Copy_Click(sender, args);
-                window.Remove_Click(sender, args);
-            };
+            var cut = new JsonTreeViewMenuItem { Operation = JsonTreeViewMenuItem.OperationType.Cut, Header = "Cut", Source = v};
+            cut.Click += window.Cut_Click;
             contextMenu.Items.Add(create);
             contextMenu.Items.Add(rename);
             contextMenu.Items.Add(remove);
@@ -265,6 +267,8 @@ namespace JsonEditor
             contextMenu.Items.Add(paste);
             return v;
         }
+
+        
 
         internal static int IndexOf<T>(this IEnumerable<T> enumerable, T item)
         {
