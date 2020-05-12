@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:JsonEditor"
         mc:Ignorable="d"
-        Height="450" Width="800">
+        Height="450" Width="800" MinWidth="256" MinHeight="128">
     <DockPanel x:Name="Dock" LastChildFill="True">
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
             <Button Background="AliceBlue" Content="New" Margin="5" Padding="2" Click="ButtonBase_OnClick" />
@@ -13,8 +13,48 @@
             <Button Background="AliceBlue" Content="Save" Margin="5" Padding="2" Click="SaveButton_Click" />
             <Button Background="AliceBlue" Content="Save as" Margin="5" Padding="2" Click="SaveAsButton_Click" />
         </StackPanel>
-        <TreeView x:Name="JsonTree" Margin="0,-0.2,-0.4,0" DockPanel.Dock="Top"
-                   MouseRightButtonUp="JsonTree_OnMouseRightButtonUp" />
+        <GridSplitter Height="100" Margin="0,27,0,-111" VerticalAlignment="Top" Width="5" />
 
+        <Grid Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="0.25*" />
+            </Grid.ColumnDefinitions>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <GridSplitter Grid.Column="1" Grid.Row="0" ShowsPreview="False" Width="3"
+                          HorizontalAlignment="Center" VerticalAlignment="Stretch" Margin="10,0" />
+            <TreeView x:Name="JsonTree" DockPanel.Dock="Top" Grid.Row="0" Grid.Column="0"
+                      MouseRightButtonUp="JsonTree_OnMouseRightButtonUp"
+                      SelectedItemChanged="JsonTree_OnSelectedItemChanged" />
+            <Border Grid.Row="0" Grid.Column="2" BorderBrush="Gray" BorderThickness="1">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Auto">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Name" Grid.Row="0" Grid.Column="0" Padding="3" />
+                        <TextBlock Text="Id" Grid.Row="1" Grid.Column="0" Padding="3" />
+                        <TextBlock Text="Type" Grid.Row="2" Grid.Column="0" Padding="3" />
+                        <GridSplitter Grid.Row="0" Grid.Column="1" ShowsPreview="False" Width="3"
+                                      HorizontalAlignment="Center" VerticalAlignment="Stretch" Grid.RowSpan="3" />
+                        <TextBlock Name="CurrentName" Grid.Row="0" Grid.Column="2" Padding="3" />
+                        <TextBlock Name="CurrentId" Grid.Row="1" Grid.Column="2" Padding="3" />
+                        <TextBlock Name="CurrentType" Grid.Row="2" Grid.Column="2" Padding="3" />
+                    </Grid>
+                </ScrollViewer>
+            </Border>
+        </Grid>
     </DockPanel>
 </Window>

@@ -149,6 +149,10 @@ namespace JsonEditor
                 Header = value;
                 JsonObject.name = value;
                 _name = value;
+                if (IsSelected)
+                {
+                    Window.CurrentName.Text = value;
+                }
             }
         }
 

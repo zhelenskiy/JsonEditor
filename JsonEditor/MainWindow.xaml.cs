@@ -245,5 +245,19 @@ namespace JsonEditor
                 LastSaved = "";
             }
         }
+
+        private void JsonTree_OnSelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            if (e.NewValue is NestedNode node)
+            {
+                CurrentId.Text = node.JsonObject.id;
+                CurrentName.Text = node.JsonObject.name;
+                CurrentType.Text = node.JsonObject.type;
+            }
+            else
+            {
+                CurrentId.Text = CurrentName.Text = CurrentType.Text = "";
+            }
+        }
     }
 }
