@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:JsonEditor"
         mc:Ignorable="d"
         Height="450" Width="800" MinWidth="256" MinHeight="128"
-        KeyDown="MainWindow_OnKeyDown">
+        KeyDown="MainWindow_OnKeyDown"
+        Closing="MainWindow_OnClosing">
     <DockPanel x:Name="Dock" LastChildFill="True">
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
             <Button x:Name="NewButton" Background="AliceBlue" Content="New" Margin="5" Padding="2" Click="NewButton_OnClick" />

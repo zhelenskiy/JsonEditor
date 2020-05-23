@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -368,5 +369,10 @@ namespace JsonEditor
                 }
             }
         }
+
+        /// <summary>
+        /// Обработка закрытия окна.
+        /// </summary>
+        private void MainWindow_OnClosing(object sender, CancelEventArgs e) => e.Cancel = !NoUnsavedData();
     }
 }
