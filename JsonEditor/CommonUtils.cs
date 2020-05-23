@@ -13,7 +13,6 @@ namespace JsonEditor
     namespace DataClasses
     {
         [SuppressMessage("ReSharper", "InconsistentNaming")]
-        [SuppressMessage("ReSharper", "UnusedMember.Global")]
         [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
         public interface INamed
         {
@@ -30,7 +29,6 @@ namespace JsonEditor
         }
 
         [SuppressMessage("ReSharper", "InconsistentNaming")]
-        [SuppressMessage("ReSharper", "UnusedMember.Global")]
         [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
         // ReSharper disable once ClassNeverInstantiated.Global
         public class Station : INamed
@@ -59,7 +57,6 @@ namespace JsonEditor
 
 
         [SuppressMessage("ReSharper", "InconsistentNaming")]
-        [SuppressMessage("ReSharper", "UnusedMember.Global")]
         [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
         // ReSharper disable once ClassNeverInstantiated.Global
         public class Arm : INamed
@@ -88,7 +85,6 @@ namespace JsonEditor
 
 
         [SuppressMessage("ReSharper", "InconsistentNaming")]
-        [SuppressMessage("ReSharper", "UnusedMember.Global")]
         [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
         // ReSharper disable once ClassNeverInstantiated.Global
         public class Device : INamed
