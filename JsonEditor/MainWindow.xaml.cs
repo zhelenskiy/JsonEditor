@@ -13,8 +13,11 @@ using Newtonsoft.Json;
 namespace JsonEditor
 {
     /// <summary>
-    /// Logic of MainWindow.xaml
+    /// Основное окно, которое содержит графическое представление нашего JSON-файла
     /// </summary>
+    /// <remarks>
+    /// Root представляет из себя основную корневую ноду
+    /// </remarks>
     public partial class MainWindow : Window
     {
         private const string JsonFilesFilter = "JSON files (*.json)|*.json|All files (*.*)|*.*";
@@ -22,6 +25,9 @@ namespace JsonEditor
 
         private string _curFileName;
 
+        /// <summary>
+        /// Отвечает за путь к открытому файлу
+        /// </summary>
         private string CurFileName
         {
             get => _curFileName;
@@ -32,11 +38,21 @@ namespace JsonEditor
             }
         }
 
+        /// <summary>
+        /// Основная корневая нода
+        /// </summary>
         internal RootNode Root { get; private set; }
-
+        /// <summary>
+        /// Последнее сохраненное состояние
+        /// </summary>
         private string LastSaved { get; set; } = "";
-
+        /// <summary>
+        /// Скопированный объект
+        /// </summary>
         internal NameNode Copied { get; private set; }
+        /// <summary>
+        /// ИСпользованное в данном файле ID
+        /// </summary>
         internal ISet<string> UsedIds { get; set; } = new HashSet<string>();
 
         public MainWindow()
@@ -46,6 +62,9 @@ namespace JsonEditor
             CurFileName = null;
         }
 
+        /// <summary>
+        /// Событие происходящее при нажати кнопки откытия файла
+        /// </summary>
         private void OpenButton_Click(object sender, RoutedEventArgs e)
         {
             if (NoUnsavedData())
@@ -55,7 +74,9 @@ namespace JsonEditor
                 HandleException(() => ReadJson(dlg.FileName), "open the file");
             }
         }
-
+        /// <summary>
+        /// Создание элемента в структуре json-файла
+        /// </summary>
         internal void Create_Click(object sender, RoutedEventArgs e)
         {
             HandleException(() =>
@@ -66,7 +87,9 @@ namespace JsonEditor
                 creationWindow.CreateItem();
             }, "create such item!");
         }
-
+        /// <summary>
+        /// Вставка из буффера части JSON файла
+        /// </summary>
         internal void Paste_Click(object sender, RoutedEventArgs e)
         {
             if (Copied == null)
@@ -94,16 +117,23 @@ namespace JsonEditor
                 }
             }
         }
-
+        /// <summary>
+        /// Копирование в буффер части JSON файла
+        /// </summary>
         internal void Copy_Click(object sender, RoutedEventArgs e) =>
             Copied = new NameNode(((JsonTreeViewMenuItem) sender).Source.JsonObject, this);
-
+        /// <summary>
+        /// Удаление части JSON файла
+        /// </summary>
         internal void Remove_Click(object sender, RoutedEventArgs e)
         {
             NestedNode item = ((JsonTreeViewMenuItem) sender).Source;
             CommonMethods.GetSelectedTreeViewItemParent(this, item).RemoveSubItem(item);
         }
-
+        /// <summary>
+        /// Переименновывает элементы JSON-файла
+        /// </summary>
+        /// 
         internal static void Rename_Click(object sender, RoutedEventArgs e)
         {
             var nestedNode = ((JsonTreeViewMenuItem) sender)?.Source;
@@ -112,7 +142,13 @@ namespace JsonEditor
             if (renameWindow.ShowDialog() != true) return;
             nestedNode.NodeName = renameWindow.ResultName;
         }
-
+        /// <summary>
+        /// Читает из файла.
+        /// </summary>
+        /// <remarks>
+        /// Строгая гарантия безопасности.
+        /// </remarks>
+        /// /// <exception cref="JsonEditorException"> Если не получается загрузить json файл</exception>
         private void ReadJson(string path)
         {
             string data;
@@ -137,7 +173,9 @@ namespace JsonEditor
             LastSaved = data;
             CurFileName = path;
         }
-
+        /// <summary>
+        /// Save as the new file.
+        /// </summary>
         private void SaveAsButton_Click(object sender, RoutedEventArgs e)
         {
             HandleException(() =>
@@ -147,7 +185,9 @@ namespace JsonEditor
                 WriteJson(dlg.FileName);
             }, "save as the new file");
         }
-
+        /// <summary>
+        /// Проверяет есть ли путь для записи файла
+        /// </summary>
         private void CheckDataToWrite()
         {
             if (CurFileName == null)
@@ -155,7 +195,9 @@ namespace JsonEditor
                 throw new JsonEditorException("No path to save to.");
             }
         }
-
+        /// <summary>
+        /// Записывает текущий JSON файл
+        /// </summary>
         private void WriteJson(string path)
         {
             try
@@ -171,7 +213,9 @@ namespace JsonEditor
 
             CurFileName = path;
         }
-
+        /// <summary>
+        /// Уведомляет пользователя об ошибке произошедшей из-за неверных данных
+        /// </summary>
         private static void HandleException(Action action, string actionName)
         {
             try
@@ -184,7 +228,9 @@ namespace JsonEditor
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
+        /// <summary>
+        /// Сохраняет файл по посленему сохраненному пути
+        /// </summary>
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             HandleException(() =>
@@ -193,7 +239,12 @@ namespace JsonEditor
                 WriteJson(CurFileName);
             }, "save the file");
         }
-
+        /// <summary>
+        /// Обрабатывает попытку вызвать контекстное меню у всего дерева
+        /// </summary>
+        /// <remarks>
+        /// Если дерево пустое, то мы можем создать первый элемент или вставить элемент из буфера
+        /// </remarks>
         private void JsonTree_OnMouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
             if (Root.Stations.Any())
@@ -216,13 +267,17 @@ namespace JsonEditor
                 JsonTree.ContextMenu = contextMenu;
             }
         }
-
+         /// <summary>
+         /// Вырезает элемент json файла
+         /// </summary>
         internal void Cut_Click(object sender, RoutedEventArgs args)
         {
             Copy_Click(sender, args);
             Remove_Click(sender, args);
         }
-
+        /// <summary>
+        /// Создание первой ноды
+        /// </summary>
         private void RootNodeCreationButton_Click(object sender, RoutedEventArgs e)
         {
             var createWindow = new CreationWindow(Root, this);
@@ -230,13 +285,17 @@ namespace JsonEditor
             UsedIds.Clear();
             createWindow.CreateItem();
         }
-
+        /// <summary>
+        /// проверяет что у нас нет несохраненных данных, которые мы можем потерять при замене на другое
+        /// </summary>
         private bool NoUnsavedData() =>
             LastSaved == "" && Root.Stations.Count == 0 || JsonConvert.SerializeObject(Root.Stations) == LastSaved ||
             MessageBox.Show("Are you sure that you want to discard the changes?", "Warning",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning) == MessageBoxResult.Yes;
-
+        /// <summary>
+        /// Обработка создания нового файла
+        /// </summary>
         private void NewButton_OnClick(object sender, RoutedEventArgs e)
         {
             if (Root.Stations.Count == 0 && CurFileName == null && LastSaved == "")
@@ -251,7 +310,9 @@ namespace JsonEditor
                 LastSaved = "";
             }
         }
-
+        /// <summary>
+        /// Поддерживает в согласованном состоянии показ свойств выделенного элемента
+        /// </summary>
         private void JsonTree_OnSelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
             if (e.NewValue is NestedNode node)
@@ -265,7 +326,9 @@ namespace JsonEditor
                 CurrentId.Text = CurrentName.Text = CurrentType.Text = "";
             }
         }
-
+        /// <summary>
+        /// Обработка горячих клавиш.
+        /// </summary>
         private void MainWindow_OnKeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyboardDevice.Modifiers.HasFlag(ModifierKeys.Control))

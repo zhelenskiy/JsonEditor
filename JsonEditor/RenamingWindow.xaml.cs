@@ -3,7 +3,7 @@
 namespace JsonEditor
 {
     /// <summary>
-    /// Interaction logic for RenamingWindow.xaml
+    /// Окно педназначенно для переименования
     /// </summary>
     public partial class RenamingWindow : Window
     {

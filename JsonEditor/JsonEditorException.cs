@@ -3,6 +3,9 @@ using System.Runtime.Serialization;
 
 namespace JsonEditor
 {
+    /// <summary>
+    /// Класс отвечает за исключения, возникшие в результате некоректных данных выданных JsonEditor.
+    /// </summary>
     internal class JsonEditorException : Exception
     {
         public JsonEditorException()

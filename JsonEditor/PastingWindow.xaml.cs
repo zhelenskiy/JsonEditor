@@ -15,7 +15,7 @@ using System.Windows.Shapes;
 namespace JsonEditor
 {
     /// <summary>
-    /// Interaction logic for PasteDialog.xaml
+    /// Окно для вставки новых элементов.
     /// </summary>
     public partial class PastingWindow : Window
     {
