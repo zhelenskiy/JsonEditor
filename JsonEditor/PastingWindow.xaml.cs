@@ -32,9 +32,16 @@ namespace JsonEditor
 
         private void AcceptButton_Click(object sender, RoutedEventArgs e) => DialogResult = true;
         internal NameNode.PasteStatus PasteItem() => ChildButton.IsChecked == true ? PasteChild() : PasteNeighbor();
-
+        /// <summary>
+        /// Создание ребенка
+        /// </summary>
+        /// <remarks> 
+        /// Текущая нода является родителем.
+        /// </remarks>
         private NameNode.PasteStatus PasteChild() => Window.Copied.AddToINode(Node, null);
-
+        /// <summary>
+        /// Текущая нода является соседом
+        /// </summary>
         private NameNode.PasteStatus PasteNeighbor()
         {
             var node = (NestedNode)Node;

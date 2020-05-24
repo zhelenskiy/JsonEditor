@@ -5,7 +5,7 @@ using System.Windows;
 namespace JsonEditor
 {
     /// <summary>
-    /// Interaction logic for CreationWindow.xaml
+    /// Класс для создания новых элементов в JSON.
     /// </summary>
     public partial class CreationWindow : Window
     {

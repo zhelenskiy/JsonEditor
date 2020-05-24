@@ -10,10 +10,17 @@ using JsonEditor.DataClasses;
 
 namespace JsonEditor
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <remarks>
+    /// Содержит классы для хранения даннных JSON.
+    /// </remarks>
     namespace DataClasses
     {
         [SuppressMessage("ReSharper", "InconsistentNaming")]
         [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
+        
         public interface INamed
         {
             string type { get; }
@@ -108,7 +115,7 @@ namespace JsonEditor
             public IEnumerable<INamed> NamedSubItems() => Enumerable.Empty<INamed>();
         }
     }
-
+    
     public interface INode
     {
         bool RemoveSubItem(NestedNode subItem);
@@ -200,7 +207,6 @@ namespace JsonEditor
 
             return true;
         }
-
         private static bool AddWithNullableIndex(this IList list, object item, int? index)
         {
             if (index == null)
@@ -214,7 +220,6 @@ namespace JsonEditor
 
             return true;
         }
-
         internal static INode GetSelectedTreeViewItemParent(MainWindow window, DependencyObject item)
         {
             var parent = VisualTreeHelper.GetParent(item);
@@ -225,7 +230,6 @@ namespace JsonEditor
 
             return parent as NestedNode as INode ?? window.Root;
         }
-
 
         internal static INode AddInterfaceNodeFromINamed(MainWindow window, ItemsControl parent, INamed item,
             int? index = null)
@@ -238,7 +242,6 @@ namespace JsonEditor
 
             return parent.Items.AddWithNullableIndex(v, index) ? v : null;
         }
-
         private static NestedNode JsonTreeViewItemFromINamed(MainWindow window, INamed item)
         {
             var contextMenu = new ContextMenu();
@@ -265,7 +268,13 @@ namespace JsonEditor
         }
 
         
-
+        /// <summary>
+        ///Считает индекс
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="enumerable"></param>
+        /// <param name="item"></param>
+        /// <returns>Индекс.</returns>
         internal static int IndexOf<T>(this IEnumerable<T> enumerable, T item)
         {
             var i = 0;
@@ -279,14 +288,22 @@ namespace JsonEditor
         }
 
         private static Random RandomGenerator { get; } = new Random();
-
+        /// <summary>
+        /// Генерирует псевдослучайное целое число.
+        /// </summary>
+        /// <returns>Псевдослучайное целое число.</returns>
         private static ulong RandomUlong()
         {
             var buf = new byte[8];
             RandomGenerator.NextBytes(buf);
             return BitConverter.ToUInt64(buf, 0);
         }
-
+        /// <summary>
+        /// Проверяет, что новое Id еще не использованно.
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <param name="newIds"></param>
+        /// <param name="currentNode"></param>
         private static void CheckIds(ISet<string> ids, ISet<string> newIds, INamed currentNode)
         {
             if (ids.Contains(currentNode.id))
@@ -305,14 +322,22 @@ namespace JsonEditor
                 CheckIds(ids, newIds, subItem);
             }
         }
-
+        /// <summary>
+        /// Проверяет, что ID не использованно
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <param name="currentNode"></param>
         internal static void CheckAndAddIds(ISet<string> ids, INamed currentNode)
         {
             var newIds = new HashSet<string>();
             CheckIds(ids, newIds, currentNode);
             ids.UnionWith(newIds);
         }
-
+        /// <summary>
+        /// Генерирует уникальное ID.
+        /// </summary>
+        /// <param name="window"></param>
+        /// <returns>Возвращает ID в виде <c>string</c></returns>
         internal static string GenerateUniqueId(MainWindow window)
         {
             string newId;
@@ -324,7 +349,9 @@ namespace JsonEditor
             return newId;
         }
     }
-
+    /// <summary>
+    /// Внешняя корневая нода. Является мнимой.
+    /// </summary>
     public class RootNode : INode
     {
         public RootNode(MainWindow window, List<Station> stations)
